@@ -9,7 +9,7 @@ import powman
 
 USER_FLASH_SIZE = rp2.Flash().ioctl(4, 0) * rp2.Flash().ioctl(5, 0)
 LFS_SIZE = 256 * 1024  # 256k state filesystem
-FS_LABEL = "".join(os.uname().machine.split(" ")[0:2])
+FS_LABEL = os.uname().machine.split(" ")[1]
 
 bdev = rp2.Flash(start=0, len=USER_FLASH_SIZE - LFS_SIZE)
 try:

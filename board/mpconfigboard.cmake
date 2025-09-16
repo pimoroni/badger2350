@@ -37,4 +37,4 @@ set(MICROPY_BLUETOOTH_BTSTACK ON)
 set(MICROPY_PY_BLUETOOTH_CYW43 ON)
 
 set(PIMORONI_UF2_DIR ${CMAKE_CURRENT_LIST_DIR}/../../firmware)
-include(${CMAKE_CURRENT_LIST_DIR}/../common.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/filesystem.cmake)

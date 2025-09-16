@@ -48,7 +48,6 @@ function ci_tools_clone {
     git clone https://github.com/gadgetoid/py_decl -b "$PY_DECL_VERSION" "$CI_BUILD_ROOT/tools/py_decl"
     git clone https://github.com/gadgetoid/dir2uf2 -b "$DIR2UF2_VERSION" "$CI_BUILD_ROOT/tools/dir2uf2"
     git clone https://github.com/gadgetoid/ffsmake -b "$FFSMAKE_VERSION" "$CI_BUILD_ROOT/tools/ffsmake" --recursive
-    python3 -m pip install littlefs-python==0.12.0
 
     # Build FFSMake utility
     FFSMAKE_DIR="$CI_BUILD_ROOT/tools/ffsmake"
@@ -65,6 +64,11 @@ function ci_micropython_build_mpy_cross {
 
 function ci_apt_install_build_deps {
     sudo apt update && sudo apt install ccache
+}
+
+function ci_install_build_deps {
+    ci_apt_install_build_deps
+    python3 -m pip install littlefs-python==0.12.0
 }
 
 function ci_prepare_all {
@@ -86,8 +90,8 @@ function micropython_version {
 }
 
 function ci_genversion {
-    BOARD=$1
-    MICROPY_BOARD_DIR=$CI_PROJECT_ROOT/boards/$BOARD
+    BOARD="tufty"
+    MICROPY_BOARD_DIR=$CI_PROJECT_ROOT/board
     if [ -z ${CI_RELEASE_FILENAME+x} ]; then
         CI_RELEASE_FILENAME=$BOARD
     fi
@@ -105,9 +109,9 @@ EOF
 }
 
 function ci_cmake_configure {
-    BOARD=$1
+    BOARD="tufty"
     TOOLS_DIR="$CI_BUILD_ROOT/tools"
-    MICROPY_BOARD_DIR=$CI_PROJECT_ROOT/boards/$BOARD
+    MICROPY_BOARD_DIR="$CI_PROJECT_ROOT/board"
     if [ ! -f "$MICROPY_BOARD_DIR/mpconfigboard.h" ]; then
         log_warning "Invalid board: \"$BOARD\". Run with ci_cmake_configure <board_name>."
         return 1
@@ -128,8 +132,8 @@ function ci_cmake_configure {
 }
 
 function ci_cmake_build {
-    BOARD=$1
-    MICROPY_BOARD_DIR=$CI_PROJECT_ROOT/boards/$BOARD
+    BOARD="tufty"
+    MICROPY_BOARD_DIR="$CI_PROJECT_ROOT/board"
     if [ ! -f "$MICROPY_BOARD_DIR/mpconfigboard.h" ]; then
         log_warning "Invalid board: \"$BOARD\". Run with ci_cmake_build <board_name>."
         return 1

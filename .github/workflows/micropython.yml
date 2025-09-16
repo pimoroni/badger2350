@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         include:
-        - name: badger_2350
+        - name: badger
 
     env:
       # MicroPython version will be contained in github.event.release.tag_name for releases
@@ -37,6 +37,20 @@ jobs:
           ccache-micropython-${{ matrix.name }}-${{ github.ref }}
           ccache-micropython-${{ matrix.name }}-
 
+    - name: "Prepare All: Generate cache key"
+      shell: bash
+      run: |
+        echo "CI_CACHE_KEY=\"`shasum "$CI_PROJECT_ROOT/ci/micropython.sh" | cut -d " " -f 1`\"" >> $GITHUB_ENV
+
+    - name: "Prepare All: Restore saved cache"
+      id: cache-prepare-all
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.CI_BUILD_ROOT }}
+        key: prepare-all-${{ env.CI_CACHE_KEY }}
+        restore-keys: |
+          prepare-all-${{ env.CI_CACHE_KEY }}
+
     - name: "Checkout Project"
       uses: actions/checkout@v4
       with:
@@ -48,12 +62,20 @@ jobs:
       with:
         release: '14.2.Rel1'
 
-    - name: "Prepare tools & dependencies"
+    - name: "Prepare All: Install dependencies"
+      if: steps.cache-prepare-all.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        source $CI_PROJECT_ROOT/ci/micropython.sh
+        ci_install_build_deps
+
+    - name: "Prepare All: Prepare tools & dependencies"
+      if: steps.cache-prepare-all.outputs.cache-hit != 'true'
       shell: bash
       run: |
         source $CI_PROJECT_ROOT/ci/micropython.sh
         mkdir -p $CI_BUILD_ROOT
-        ci_apt_install_build_deps
+        ci_install_build_deps
         ci_prepare_all
 
     - name: "MicroPython: Configure"
@@ -61,13 +83,13 @@ jobs:
       run: |
         source $CI_PROJECT_ROOT/ci/micropython.sh
         micropython_version
-        ci_cmake_configure ${{ matrix.name }}
+        ci_cmake_configure
 
     - name: "MicroPython: Build"
       shell: bash
       run: |
         source $CI_PROJECT_ROOT/ci/micropython.sh
-        ci_cmake_build ${{ matrix.name }}
+        ci_cmake_build
 
     - name: "Artifacts: Upload .uf2"
       uses: actions/upload-artifact@v4
