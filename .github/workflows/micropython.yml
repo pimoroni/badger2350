@@ -37,6 +37,12 @@ jobs:
           ccache-micropython-${{ matrix.name }}-${{ github.ref }}
           ccache-micropython-${{ matrix.name }}-
 
+    - name: "Checkout Project"
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+        path: ${{ env.CI_PROJECT_ROOT }}
+
     - name: "Prepare All: Generate cache key"
       shell: bash
       run: |
@@ -50,12 +56,6 @@ jobs:
         key: prepare-all-${{ env.CI_CACHE_KEY }}
         restore-keys: |
           prepare-all-${{ env.CI_CACHE_KEY }}
-
-    - name: "Checkout Project"
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-        path: ${{ env.CI_PROJECT_ROOT }}
 
     - name: "Install Arm GNU Toolchain (arm-none-eabi-gcc)"
       uses: carlosperate/arm-none-eabi-gcc-action@v1
