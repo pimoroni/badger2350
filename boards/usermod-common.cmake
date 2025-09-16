@@ -37,17 +37,11 @@ include(qrcode/micropython/micropython)
 # Sensors & Breakouts
 include(micropython-common-breakouts)
 
-# Driver for Badger RTC
+# Driver for RTC
 include(pcf85063a/micropython)
 
 # Utility
 include(adcfft/micropython)
-
-# Servos & Motors
-include(pwm/micropython)
-include(servo/micropython)
-include(encoder/micropython)
-include(motor/micropython)
 
 # Sleep / Wake Reason
 include(modules/c/powman/micropython)
