@@ -1,4 +1,0 @@
-basic/*.py
-basic/*.af
-*.py
-*.af

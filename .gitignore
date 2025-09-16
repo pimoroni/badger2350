@@ -43,4 +43,4 @@ boards/*/version.py
 # Other cruft
 venv
 .vscode
-
+.DS_Store

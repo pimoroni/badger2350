@@ -7,7 +7,6 @@ find_package (Python COMPONENTS Interpreter Development)
 message("dir2uf2/py_decl: Using Python ${Python_EXECUTABLE}")
 
 # Convert supplies paths to absolute, for a quieter life
-get_filename_component(PIMORONI_UF2_MANIFEST ${PIMORONI_UF2_MANIFEST} REALPATH)
 get_filename_component(PIMORONI_UF2_DIR ${PIMORONI_UF2_DIR} REALPATH)
 
 if (EXISTS "${PIMORONI_TOOLS_DIR}/py_decl/py_decl.py")
