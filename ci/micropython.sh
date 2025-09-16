@@ -52,7 +52,7 @@ function ci_tools_clone {
 
     # Build FFSMake utility
     FFSMAKE_DIR="$CI_BUILD_ROOT/tools/ffsmake"
-    git apply --directory="$FFSMAKE_DIR/oofatfs" "$FFSMAKE_DIR/n_fats.patch"
+    # git apply --directory="$FFSMAKE_DIR/oofatfs" "$FFSMAKE_DIR/n_fats.patch"
     mkdir -p "$FFSMAKE_DIR/build"
     cmake -S "$FFSMAKE_DIR" -B "$FFSMAKE_DIR/build"
     cmake --build "$FFSMAKE_DIR/build"

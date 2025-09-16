@@ -46,7 +46,7 @@ jobs:
     - name: "Prepare All: Generate cache key"
       shell: bash
       run: |
-        echo "CI_CACHE_KEY=\"`shasum "$CI_PROJECT_ROOT/ci/micropython.sh" | cut -d " " -f 1`\"" >> $GITHUB_ENV
+        echo "CI_CACHE_KEY=`shasum "$CI_PROJECT_ROOT/ci/micropython.sh" | cut -d " " -f 1`" >> $GITHUB_ENV
 
     - name: "Prepare All: Restore saved cache"
       id: cache-prepare-all
