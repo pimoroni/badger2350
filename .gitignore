@@ -35,7 +35,7 @@
 **/build
 build-*
 build
-boards/*/version.py
+board/version.py
 
 # Apple filesystem cruft
 .DS_Store

@@ -90,7 +90,7 @@ function micropython_version {
 }
 
 function ci_genversion {
-    BOARD="tufty"
+    BOARD="badger"
     MICROPY_BOARD_DIR=$CI_PROJECT_ROOT/board
     if [ -z ${CI_RELEASE_FILENAME+x} ]; then
         CI_RELEASE_FILENAME=$BOARD
@@ -109,7 +109,7 @@ EOF
 }
 
 function ci_cmake_configure {
-    BOARD="tufty"
+    BOARD="badger"
     TOOLS_DIR="$CI_BUILD_ROOT/tools"
     MICROPY_BOARD_DIR="$CI_PROJECT_ROOT/board"
     if [ ! -f "$MICROPY_BOARD_DIR/mpconfigboard.h" ]; then
@@ -132,7 +132,7 @@ function ci_cmake_configure {
 }
 
 function ci_cmake_build {
-    BOARD="tufty"
+    BOARD="badger"
     MICROPY_BOARD_DIR="$CI_PROJECT_ROOT/board"
     if [ ! -f "$MICROPY_BOARD_DIR/mpconfigboard.h" ]; then
         log_warning "Invalid board: \"$BOARD\". Run with ci_cmake_build <board_name>."
