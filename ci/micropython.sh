@@ -41,6 +41,7 @@ function ci_micropython_clone {
     git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/micropython-lib
     git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/tinyusb
     git -C "$CI_BUILD_ROOT/micropython" submodule update --init lib/btstack
+    git -C "$CI_BUILD_ROOT/micropython/lib/pico-sdk" apply "$CI_PROJECT_ROOT/ci/pico-sdk-crt0-startup-rosc.patch"
 }
 
 function ci_tools_clone {
@@ -51,6 +52,7 @@ function ci_tools_clone {
 
     # Build FFSMake utility
     FFSMAKE_DIR="$CI_BUILD_ROOT/tools/ffsmake"
+    git apply --directory="$FFSMAKE_DIR/oofatfs" "$FFSMAKE_DIR/n_fats.patch"
     mkdir -p "$FFSMAKE_DIR/build"
     cmake -S "$FFSMAKE_DIR" -B "$FFSMAKE_DIR/build"
     cmake --build "$FFSMAKE_DIR/build"
