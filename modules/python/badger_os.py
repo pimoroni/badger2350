@@ -114,17 +114,14 @@ def launch(file):
 
     gc.collect()
 
-    button_a = machine.Pin(badger2350.BUTTON_A, machine.Pin.IN, machine.Pin.PULL_DOWN)
-    button_c = machine.Pin(badger2350.BUTTON_C, machine.Pin.IN, machine.Pin.PULL_DOWN)
-
     def quit_to_launcher(_pin):
-        if button_a.value() == 0 and button_c.value() == 0:
-            state_clear_running()
-            os.sync()
-            machine.reset()
+        state_clear_running()
+        os.sync()
+        while badger2350.BUTTON_HOME.value() == 0:
+            pass
+        machine.reset()
 
-    button_a.irq(trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher)
-    button_c.irq(trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher)
+    badger2350.BUTTON_HOME.irq(trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher)
 
     try:
         __import__(file)

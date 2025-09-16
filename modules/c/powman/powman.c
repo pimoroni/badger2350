@@ -308,6 +308,10 @@ static inline void setup_gpio(bool buttons_only) {
     gpio_init(BW_VBUS_DETECT);
     gpio_set_dir(BW_VBUS_DETECT, GPIO_IN);
 
+    // Init the charge status detect
+    gpio_init(BW_CHARGE_STAT);
+    gpio_set_dir(BW_CHARGE_STAT, GPIO_IN);
+
     // Set up LEDs
     gpio_init_mask(0b1111);
     gpio_set_dir_out_masked(0b1111);
@@ -336,12 +340,17 @@ static inline void setup_system(void) {
     pcf85063_disable_interrupt();
 }
 
+static int64_t alarm_clear_double_tap(alarm_id_t id, __unused void *user_data) {
+    clear_double_tap_flag();
+    return 0;
+}
+
 static void __attribute__((constructor)) powman_startup(void) {
     setup_gpio(false);
     latch_inputs();
 
     // If we haven't reset via a button press we ought not to delay startup
-    if (!(powman_hw->chip_reset & POWMAN_CHIP_RESET_HAD_RUN_LOW_BITS)) {
+    if (!(powman_hw->chip_reset & POWMAN_CHIP_RESET_HAD_RUN_LOW_BITS) || watchdog_caused_reboot()) {
         setup_system();
         return;
     };
@@ -350,14 +359,21 @@ static void __attribute__((constructor)) powman_startup(void) {
         // Arm, wait, then disarm and continue booting
         set_double_tap_flag();
 
-        for(int i = 0; i < POWMAN_DOUBLE_RESET_TIMEOUT_MS / 50; i++) {
+        add_alarm_in_ms(POWMAN_DOUBLE_RESET_TIMEOUT_MS, alarm_clear_double_tap, NULL, false);
+
+        bool long_press = true;
+        for(int i = 0; i < POWMAN_LONG_PRESS_TIMEOUT_MS / 50; i++) {
+            if(gpio_get(BW_RESET_SW)) {
+                long_press = false;
+                break;
+            }
             // DEBUG: Crudely flicker leds
+            // TODO: Light up the LEDs in sequence to indicate long press timing
             gpio_put_masked(0b1111, i & 1);
             busy_wait_us(50 * 1000);
         }
         gpio_put_masked(0b1111, 0);
-        clear_double_tap_flag();
-        if(gpio_get(BW_RESET_SW) == 0) {
+        if(long_press) {
             // If the reset sw is pressed at this point, assume it's held
             powman_init();
 

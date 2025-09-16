@@ -6,6 +6,7 @@
 #include "pico/sync.h"
 #include "hardware/gpio.h"
 #include "hardware/powman.h"
+#include "hardware/watchdog.h"
 #include "hardware/clocks.h"
 #include "hardware/pll.h"
 #include "hardware/adc.h"
@@ -23,7 +24,8 @@
 // For Blinky teardown
 #include "hardware/pio.h"
 
-#define POWMAN_DOUBLE_RESET_TIMEOUT_MS 2000
+#define POWMAN_DOUBLE_RESET_TIMEOUT_MS 1000
+#define POWMAN_LONG_PRESS_TIMEOUT_MS 1000
 
 #define POWMAN_WAKE_PWRUP0_CH 0  // WAKE_VBUS_DETECT
 #define POWMAN_WAKE_PWRUP1_CH 1  // WAKE_RTC
