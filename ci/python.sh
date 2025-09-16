@@ -42,6 +42,14 @@ function qa_examples_fix {
     qa_fix examples/
 }
 
+function qa_firmware_check {
+    qa_check firmware/
+}
+
+function qa_firmware_fix {
+    qa_fix firmware/
+}
+
 function qa_modules_check {
     qa_check modules/
 }

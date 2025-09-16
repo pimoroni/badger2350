@@ -23,6 +23,10 @@ jobs:
       shell: bash
       run: source ci/python.sh && qa_examples_check
 
+    - name: Lint MicroPython Firmware
+      shell: bash
+      run: source ci/python.sh && qa_firmware_check
+
     - name: Lint MicroPython Modules
       shell: bash
       run: source ci/python.sh && qa_modules_check
