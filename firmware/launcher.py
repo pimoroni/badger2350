@@ -8,6 +8,8 @@ from picovector import ANTIALIAS_BEST, HALIGN_CENTER, PicoVector, Polygon, Trans
 
 import badger2350
 
+SLEEP_TIMEOUT = 60
+
 changed = False
 first_render = False
 exited_to_launcher = False
@@ -251,6 +253,7 @@ if exited_to_launcher or not woken_by_button:
     changed = True
     first_render = True
 
+t_start = time.time()
 
 while True:
     # Sometimes a button press or hold will keep the system
@@ -281,6 +284,8 @@ while True:
             selected_index = min(selected_index, ICONS_TOTAL - 1)
             changed = True
 
+    badger2350.reset_pressed_to_wake()
+
     if changed:
         state["selected_file"] = apps[selected_index].path
         badger_os.state_save("launcher", state)
@@ -296,5 +301,8 @@ while True:
             display.set_update_speed(badger2350.UPDATE_TURBO)
 
         render(selected_index)
+        t_start = time.time()
 
-    display.sleep()
+    if time.time() - t_start > SLEEP_TIMEOUT:
+        display.sleep()
+
