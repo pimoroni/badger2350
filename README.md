@@ -2,6 +2,8 @@
  
 A huge upgrade from the original Badger - launched four years ago - the new e-paper display delivers four crisp shades of grey for sharper images and clearer text.
 
+Get your very own Badger from [https://shop.pimoroni.com/products/badger-2350](https://shop.pimoroni.com/products/badger-2350)
+
 ![Badger 2350 front](https://badgewa.re/static/images/badger_web_front.png)
 
 - [Specs](#specs)
