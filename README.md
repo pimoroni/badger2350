@@ -1,5 +1,5 @@
 # Badger 2350<!-- omit in toc -->
- 
+
 A huge upgrade from the original Badger - launched four years ago - the new e-paper display delivers four crisp shades of grey for sharper images and clearer text.
 
 Get your very own Badger from [https://shop.pimoroni.com/products/badger-2350](https://shop.pimoroni.com/products/badger-2350)
@@ -11,6 +11,7 @@ Get your very own Badger from [https://shop.pimoroni.com/products/badger-2350](h
 - [Help](#help)
   - [Updating/Reflashing Firmware](#updatingreflashing-firmware)
   - [Installing Apps](#installing-apps)
+  - [Configuring WiFi](#configuring-wifi)
   - [API Documentation](#api-documentation)
 
 ## Specs
@@ -35,9 +36,9 @@ More details at [https://badgewa.re](https://badgewa.re)
 
 ### Updating/Reflashing Firmware
 
-:warning: Our firmware comes in two flavours: 
+:warning: Our firmware comes in two flavours:
 
-1. `badger-vX.X.X-micropython-with-filesystem` which will replace all the apps and software on your device with the defaults, and 
+1. `badger-vX.X.X-micropython-with-filesystem` which will replace all the apps and software on your device with the defaults, and
 
 2. `badger-vX.X.X-micropython.uf2` which will replace only the firmware.
 
@@ -59,7 +60,17 @@ Then:
 * Turn your badge around so the back is facing you.
 * Double-tap the RESET button, located toward the right on the left-hand side of the badge.
 * A disk named "Badger2350" should appear on your computer.
-* Copy your app directory into /system/apps.
+* Copy your app directory into "apps".
+* *Safely Unmount* the disk from your computer. This may take a second.
+* Your badge should reboot into the menu!
+
+### Configuring WiFi
+
+* Connect your badge to your computer with a USB Type-C to USB A cable.
+* Turn your badge around so the back is facing you.
+* Double-tap the RESET button, located toward the right on the left-hand side of the badge.
+* A disk named "Badger2350" should appear on your computer.
+* Edit the file "secrets.py" and fill in your WiFi credentials.
 * *Safely Unmount* the disk from your computer. This may take a second.
 * Your badge should reboot into the menu!
 
