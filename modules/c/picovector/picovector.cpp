@@ -156,13 +156,13 @@ namespace picovector {
     }
 
     int out_minx = (minx >> aa);
-    int out_maxx = ((maxx - (1 << aa)) >> aa);
+    int out_maxx = ((maxx + (1 << aa) - 1) >> aa);
     int out_miny = (miny >> aa);
-    int out_maxy = ((maxy - (1 << aa)) >> aa);
+    int out_maxy = ((maxy + (1 << aa) - 1) >> aa);
 
     return rect_t(out_minx, out_miny,
-              (out_maxx - out_minx) + 1,
-              (out_maxy - out_miny) + 2);
+              (out_maxx - out_minx),
+              (out_maxy - out_miny));
   }
 
   void render(shape_t *shape, image_t *target, mat3_t *transform, brush_t *brush) {
