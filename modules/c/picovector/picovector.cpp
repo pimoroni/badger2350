@@ -20,7 +20,7 @@ char __attribute__((aligned(4))) PicoVector_working_buffer[working_buffer_size];
 #define TILE_HEIGHT 16
 #define MAX_NODES_PER_SCANLINE 64
 
-#define TILE_BUFFER_SIZE (TILE_WIDTH * TILE_HEIGHT * sizeof(uint8_t)) // 8kB tile buffer
+#define TILE_BUFFER_SIZE (TILE_WIDTH * (TILE_HEIGHT + 1) * sizeof(uint8_t)) // 8kB tile buffer
 #define NODE_BUFFER_ROW_SIZE (MAX_NODES_PER_SCANLINE * sizeof(int16_t))
 #define NODE_BUFFER_SIZE (TILE_HEIGHT * 4 * NODE_BUFFER_ROW_SIZE) // 32kB node buffer
 #define NODE_COUNT_BUFFER_SIZE (TILE_HEIGHT * 4 * sizeof(uint8_t)) // 256 byte node count buffer
@@ -114,7 +114,7 @@ namespace picovector {
     int maxx = 0;
     int maxy = 0;
 
-    for(int y = 0; y <= int(tb->h); y++) {
+    for(int y = 0; y < int(tb->h); y++) {
       if(node_count_buffer[y] == 0) {
         continue; // no nodes on this raster line
       }
@@ -162,7 +162,7 @@ namespace picovector {
 
     return rect_t(out_minx, out_miny,
               (out_maxx - out_minx),
-              (out_maxy - out_miny));
+              (out_maxy - out_miny) + 1);
   }
 
   void render(shape_t *shape, image_t *target, mat3_t *transform, brush_t *brush) {
@@ -217,7 +217,7 @@ namespace picovector {
 
         // clear existing tile data and nodes
         memset(node_count_buffer, 0, NODE_COUNT_BUFFER_SIZE);
-        for (int row = 0; row < sh; ++row) {
+        for (int row = 0; row <= sh; ++row) {
           memset(&tile_buffer[row * TILE_WIDTH], 0, sw);
         }
 
@@ -353,7 +353,7 @@ namespace picovector {
 
         // clear existing tile data and nodes
         memset(node_count_buffer, 0, NODE_COUNT_BUFFER_SIZE);
-        for (int row = 0; row < sh; ++row) {
+        for (int row = 0; row <= sh; ++row) {
           memset(&tile_buffer[row * TILE_WIDTH], 0, sw);
         }
 
