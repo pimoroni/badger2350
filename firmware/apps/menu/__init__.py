@@ -12,6 +12,7 @@ from app import Apps
 
 screen.font = rom_font.nope
 
+mode(FAST_UPDATE)
 
 # find installed apps and create apps
 apps = Apps("/system/apps")
