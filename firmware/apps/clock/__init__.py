@@ -679,7 +679,8 @@ def init():
 
 
 def on_exit():
-    pass
+    rtc.enable_alarm_interrupt(False)
+    rtc.enable_timer_interrupt(False)
 
 
 # Standalone support for Thonny debugging
