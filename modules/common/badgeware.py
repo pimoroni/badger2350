@@ -678,17 +678,10 @@ screen.pen = BG
 for k in ("mode", "HIRES", "LORES", "FAST_UPDATE", "FULL_UPDATE", "MEDIUM_UPDATE", "DITHER", "SpriteSheet", "load_font", "rom_font", "text_tokenise", "text_draw"):
     setattr(builtins, k, locals()[k])
 
-
-# Temporary shim to keep "pen()" working
-def _pen(*args):
-    if len(args) in (3, 4):
-        screen.pen = color.rgb(*args)
-    else:
-        screen.pen = args[0]
-
-
-builtins.pen = _pen
-
+# Hoist image anti-aliasing constants
+builtins.OFF = image.OFF
+builtins.X2 = image.X2
+builtins.X4 = image.X4
 
 # Finally, build in badgeware as "bw" for less frequently used things
 builtins.bw = sys.modules["badgeware"]

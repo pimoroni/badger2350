@@ -2,6 +2,30 @@ import rp2
 from badgeware import run, set_case_led
 from machine import Timer
 
+import binascii
+import uctypes
+
+
+# Get a CRC of the FAT (first 16k of the user filesystem) ~16ms
+CACHE_FILE = "/.fsbackup"
+
+fat = uctypes.bytearray_at(0x10300000, 16 * 1024)
+crc = f"{binascii.crc32(fat):08x}"
+
+try:
+    cached_crc = open(f"{CACHE_FILE}.crc32", "r").read().strip()
+except OSError:
+    cached_crc = ""
+
+if cached_crc != crc:
+    with open(f"{CACHE_FILE}.crc32", "w") as f:
+        f.write(crc)
+        f.flush()
+    with open(CACHE_FILE, "wb") as f:
+        f.write(fat)
+        f.flush()
+
+
 rp2.enable_msc()
 
 small_font = rom_font.winds
