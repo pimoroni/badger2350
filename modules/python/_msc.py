@@ -1,10 +1,20 @@
 import rp2
-from badgeware import run
+from badgeware import run, set_case_led
+from machine import Timer
 
 rp2.enable_msc()
 
 small_font = rom_font.winds
 large_font = rom_font.nope
+
+def activity_leds(_t):
+    busy = rp2.is_msc_busy()
+    for led in range(4):
+        set_case_led(led, int(busy))
+
+
+activity_timer = Timer()
+activity_timer.init(period=100, callback=activity_leds)
 
 
 class DiskMode():
