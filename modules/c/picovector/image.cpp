@@ -237,10 +237,10 @@ namespace picovector {
 
   void image_t::blit(image_t *target, const vec2_t p) {
     rect_t sr = _bounds;
-    rect_t tr(p.x, p.y, sr.w, sr.h); // target rect
-
     sr = sr.floor();
-    tr = tr.floor();
+
+    rect_t tr(floorf(p.x), floorf(p.y), sr.w, sr.h); // target rect
+
     clip_blit_rect(sr, _bounds, tr);
     clip_blit_rect(tr, target->_bounds, sr);
     if(sr.w <= 0 || sr.h <= 0 || tr.w <= 0 || tr.h <= 0) {
