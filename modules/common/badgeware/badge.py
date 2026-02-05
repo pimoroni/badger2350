@@ -51,11 +51,11 @@ def sample_adc_u16(adc, samples=1):
 class Badge():
     def  __init__(self):
         if MODEL == "badger":
-            self._background = color.white
-            self._foreground = color.black
+            self._default_clear = color.white
+            self._default_pen = color.black
         else:
-            self._background = color.black
-            self._foreground = color.white
+            self._default_clear = color.black
+            self._default_pen = color.white
         self._current_mode = None
 
         self._case_lights = [
@@ -87,16 +87,16 @@ class Badge():
     def uid(self):
         return UID
 
-    def background(self, *args):
+    def default_clear(self, *args):
         if len(args) == 0:
-            return self._background
-        self._background = args[0]
+            return self._default_clear
+        self._default_clear = args[0]
         return None
 
-    def foreground(self, *args):
+    def default_pen(self, *args):
         if len(args) == 0:
-            return self._foreground
-        self._foreground = args[0]
+            return self._default_pen
+        self._default_pen = args[0]
         return None
 
     def mode(self, mode=None):
@@ -120,7 +120,7 @@ class Badge():
         brush = getattr(getattr(builtins, "screen", None), "pen", None)
         builtins.screen = image(display.WIDTH, display.HEIGHT, memoryview(display))
         screen.font = font if font is not None else rom_font.sins
-        screen.pen = brush if brush is not None else self._foreground
+        screen.pen = brush if brush is not None else self._default_pen
 
         return None
 
