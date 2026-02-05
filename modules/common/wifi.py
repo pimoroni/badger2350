@@ -31,13 +31,13 @@ def tick():
   if wlan is not None and wlan.isconnected():
     return True
 
-  timed_out = _timeout_ticks is not None and io.ticks > _timeout_ticks
+  timed_out = _timeout_ticks is not None and badge.ticks > _timeout_ticks
   error = wlan is not None and wlan.status() not in (0, 1, 2, 3)
 
   if (timed_out or error):
     if _retries:
       _retries -= 1
-      _timeout_ticks = io.ticks + (_timeout * 1000)
+      _timeout_ticks = badge.ticks + (_timeout * 1000)
       wlan.connect(_ssid, _psk)
       return False
 
@@ -71,7 +71,7 @@ def connect(ssid=None, psk=None, timeout=60, retries=5):
   _retries = retries
   _timeout = timeout
   wlan.connect(ssid, psk)
-  _timeout_ticks = io.ticks + (timeout * 1000)
+  _timeout_ticks = badge.ticks + (timeout * 1000)
   return False
 
 

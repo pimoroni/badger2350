@@ -6,13 +6,13 @@ sys.path.insert(0, "/")
 os.chdir("/system/apps/menu")
 
 import ui
-from badgeware import run, State
+from badgeware import State
 
 from app import Apps
 
 screen.font = rom_font.nope
 
-mode(FAST_UPDATE)
+badge.mode(FAST_UPDATE)
 
 # find installed apps and create apps
 apps = Apps("/system/apps")
@@ -33,15 +33,15 @@ def update():
     global active, apps
 
     # process button inputs to switch between apps
-    if io.BUTTON_C in io.pressed:
+    if badge.pressed(BUTTON_C):
         if (state["active"] % 3) < 2 and state["active"] < len(apps) - 1:
             state["active"] += 1
-    if io.BUTTON_A in io.pressed:
+    if badge.pressed(BUTTON_A):
         if (state["active"] % 3) > 0 and state["active"] > 0:
             state["active"] -= 1
-    if io.BUTTON_UP in io.pressed and state["active"] >= 3:
+    if badge.pressed(BUTTON_UP) and state["active"] >= 3:
         state["active"] -= 3
-    if io.BUTTON_DOWN in io.pressed:
+    if badge.pressed(BUTTON_DOWN):
         state["active"] += 3
         if state["active"] >= len(apps):
             state["active"] = len(apps) - 1
@@ -50,11 +50,11 @@ def update():
 
     State.modify("menu", state)
 
-    if io.BUTTON_B in io.pressed:
+    if badge.pressed(BUTTON_B):
         state["running"] = f"/system/apps/{apps.active.path}"
         State.modify("menu", state)
-        while io.BUTTON_B in io.pressed or io.BUTTON_B in io.held:
-            io.poll()
+        while badge.pressed(BUTTON_B) or badge.held(BUTTON_B):
+            badge.poll()
         return state["running"]
 
     ui.draw_background()

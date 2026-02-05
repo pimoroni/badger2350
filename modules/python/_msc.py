@@ -1,5 +1,5 @@
 import rp2
-from badgeware import run, set_case_led
+from badgeware import run
 from machine import Timer
 
 import binascii
@@ -33,8 +33,7 @@ large_font = rom_font.nope
 
 def activity_leds(_t):
     busy = rp2.is_msc_busy()
-    for led in range(4):
-        set_case_led(led, int(busy))
+    badge.set_caselights(int(busy))
 
 
 activity_timer = Timer()
@@ -82,9 +81,9 @@ class DiskMode():
         screen.text(title, title_pos.x, title_pos.y)
 
         screen.pen = color.dark_grey
-        text_draw(screen, "1: Your badge is now mounted as a disk", rect(30, 45, 210, 100))
-        text_draw(screen, "2: Copy code onto it to experiment!", rect(30, 85, 210, 100))
-        text_draw(screen, "3: Eject the disk to reboot your badge", rect(30, 125, 210, 100))
+        text.draw(screen, "1: Your badge is now mounted as a disk", rect(30, 45, 210, 100))
+        text.draw(screen, "2: Copy code onto it to experiment!", rect(30, 85, 210, 100))
+        text.draw(screen, "3: Eject the disk to reboot your badge", rect(30, 125, 210, 100))
 
 
 def center_text(text, y):

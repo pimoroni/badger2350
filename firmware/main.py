@@ -4,7 +4,7 @@ import os
 import sys
 
 import machine
-from badgeware import State, fatal_error, run, file_exists
+from badgeware import State
 
 
 def quit_to_launcher(pin):

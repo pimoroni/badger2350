@@ -1,6 +1,5 @@
 import sys
 import os
-from badgeware import run, clamp
 
 sys.path.insert(0, "/system/apps/badge")
 os.chdir("/system/apps/badge")
@@ -58,13 +57,13 @@ def update():
     screen.pen = brush.pattern(color.white, color.black, pattern)
     screen.clear()
 
-    if io.BUTTON_B in io.pressed:
+    if badge.pressed(BUTTON_B):
         rear_view = not rear_view
 
-    if io.BUTTON_UP in io.pressed:
+    if badge.pressed(BUTTON_UP):
         pattern += 1
 
-    if io.BUTTON_DOWN in io.pressed:
+    if badge.pressed(BUTTON_DOWN):
         pattern -= 1
 
     pattern = clamp(pattern, 0, 37)

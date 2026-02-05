@@ -1,6 +1,6 @@
 import os
 import sys
-from badgeware import run, State
+from badgeware import State
 
 
 # Standalone bootstrap for finding app assets

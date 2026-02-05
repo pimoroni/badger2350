@@ -1,6 +1,3 @@
-from badgeware import get_battery_level, is_charging
-
-
 def draw_background():
     screen.pen = brush.pattern(color.white, color.dark_grey, 23)
     screen.clear()
@@ -29,10 +26,10 @@ def draw_header():
     screen.text(label, *pos)
 
     # draw the battery indicator
-    if is_charging():
-        battery_level = (io.ticks / 20) % 100
+    if badge.is_charging():
+        battery_level = (badge.ticks / 20) % 100
     else:
-        battery_level = get_battery_level()
+        battery_level = badge.battery_level()
     pos = (screen.width - 30, 4)
     size = (16, 8)
     screen.pen = color.white

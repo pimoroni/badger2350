@@ -1,6 +1,5 @@
 import os
 import math
-from badgeware import is_dir, file_exists
 
 
 

@@ -5,7 +5,7 @@ import math
 sys.path.insert(0, "/system/apps/hydrate")
 os.chdir("/system/apps/hydrate")
 
-from badgeware import run, State, clamp
+from badgeware import State
 
 CX = screen.width / 2
 CY = screen.height / 2
@@ -80,7 +80,7 @@ def draw_menu():
     # darken the background when the menu is showing
     if show_menu:
 
-        mode(FAST_UPDATE)
+        badge.mode(FAST_UPDATE)
 
         screen.pen = background
         screen.clear()
@@ -117,28 +117,28 @@ def init():
 def update():
     global state, show_menu, menu_value
 
-    mode(MEDIUM_UPDATE)
+    badge.mode(MEDIUM_UPDATE)
 
     screen.font = large_font
 
-    if io.BUTTON_B in io.pressed:
+    if badge.pressed(BUTTON_B):
         show_menu = not show_menu
 
     if show_menu:
         # increase/decrease the value to add
         # short press is +/- 5ml and long is +/- 25ml
-        if io.BUTTON_A in io.pressed:
+        if badge.pressed(BUTTON_A):
             menu_value -= 100
-        if io.BUTTON_C in io.pressed:
+        if badge.pressed(BUTTON_C):
             menu_value += 100
 
-        if io.BUTTON_DOWN in io.pressed:
+        if badge.pressed(BUTTON_DOWN):
             state["current"] += menu_value
             menu_value = 0
             show_menu = not show_menu
             State.save("hydrate", state)
 
-        if io.BUTTON_UP in io.held:
+        if badge.held(BUTTON_UP):
             state["current"] = 0
             State.save("hydrate", state)
 

@@ -147,7 +147,7 @@ mp_obj_t ticks;
       .globals = (mp_obj_dict_t *)&input_globals,
   };
 
-  MP_REGISTER_MODULE(MP_QSTR_picovector_io, mod_input);
+  MP_REGISTER_MODULE(MP_QSTR__input, mod_input);
   MP_REGISTER_MODULE_DELEGATION(mod_input, input_attr);
 }
 

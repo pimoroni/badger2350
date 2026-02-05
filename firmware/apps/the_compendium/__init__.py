@@ -3,7 +3,7 @@ import os
 import random
 import sys
 
-from badgeware import State, run
+from badgeware import State
 
 sys.path.insert(0, "/system/apps/the_compendium")
 os.chdir("/system/apps/the_compendium")
@@ -14,7 +14,7 @@ import monster
 import raycaster
 import ui
 
-mode(FAST_UPDATE)
+badge.mode(FAST_UPDATE)
 
 standard_font = pixel_font.load("/system/assets/fonts/sins.ppf")
 screen.font = standard_font
@@ -173,13 +173,13 @@ def player_move():
     global y_factor
 
     if previous_screen is None:
-        if io.BUTTON_A in io.pressed:
+        if badge.pressed(BUTTON_A):
             player.turn(1)
             return None
-        if io.BUTTON_C in io.pressed:
+        if badge.pressed(BUTTON_C):
             player.turn(-1)
             return None
-        if io.BUTTON_B in io.pressed:
+        if badge.pressed(BUTTON_B):
             player.check_movement(monsters)
             if player.can_walk(monsters):
                 player.walk()
@@ -188,10 +188,10 @@ def player_move():
             if lookat_item is None:
                 return None
             return lookat_item.examine()
-        if io.BUTTON_DOWN in io.pressed:
+        if badge.pressed(BUTTON_DOWN):
             lookat_item = player.get_lookat_item(current_level, monsters)
             return lookat_item.interact()
-        if io.BUTTON_UP in io.pressed:
+        if badge.pressed(BUTTON_UP):
             return cutscene.InventoryScreen(player)
     return None
 
@@ -233,7 +233,7 @@ def update():
     # If we're on the title screen, just display it.
     if game_state == 0:
         screen.blit(title, vec2(0, 0))
-        if io.pressed:
+        if badge.pressed():
             game_state = 1
             state["game_state"] = 1
             save_state()
@@ -245,15 +245,15 @@ def update():
 
         # If the last screen was dialogue, find out what was chosen
         if isinstance(previous_screen, dialogue.DialogueNode):
-            if io.BUTTON_A in io.pressed:
+            if badge.pressed(BUTTON_A):
                 previous_screen = previous_screen.choose(0)
-            elif io.BUTTON_B in io.pressed:
+            elif badge.pressed(BUTTON_B):
                 previous_screen = previous_screen.choose(1)
-            elif io.BUTTON_C in io.pressed:
+            elif badge.pressed(BUTTON_C):
                 previous_screen = previous_screen.choose(2)
-            elif io.BUTTON_DOWN in io.pressed:
+            elif badge.pressed(BUTTON_DOWN):
                 previous_screen = previous_screen.choose(3)
-            elif io.BUTTON_UP in io.pressed:
+            elif badge.pressed(BUTTON_UP):
                 previous_screen = previous_screen.choose(4)
 
         # If we're in the inventory, the only thing to do is come out of the inventory.

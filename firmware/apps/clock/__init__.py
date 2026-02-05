@@ -5,28 +5,22 @@ sys.path.insert(0, "/system/apps/clock")
 sys.path.insert(0, "/")
 os.chdir("/system/apps/clock")
 
-from badgeware import run, SpriteSheet, State, rtc
+from badgeware import State
 import time
 import ntptime
 from daylightsaving import DaylightSavingPolicy, DaylightSaving
 from usermessage import user_message, center_text, stretch_text
-from machine import RTC, Pin
+from machine import RTC
 import math
 import secrets
 import wifi
 
 
 # Set the LED to light whenever the unit's active.
-Pin.board.CL0.value(1)
+badge.set_caselights(0.1)
 
 # Clear any previously set RTC flags.
-rtc.clear_alarm_flag()
-rtc.clear_timer_flag()
-
-# Enable the RTC interrupts.
-# Timers run without this but they won't be able to wake the board.
-rtc.enable_alarm_interrupt(True)
-rtc.enable_timer_interrupt(True)
+rtc.clear_alarm()
 
 
 # Making classes for which clock is displayed, so we can refer to them by name.
@@ -632,7 +626,7 @@ def update():
 
     # If the year in the RTC is 2021 or earlier, we need to sync so it has the same effect as pressing B.
     # This starts the chain of connecting to the WiFi and pulling the correct time.
-    elif io.BUTTON_B in io.pressed or time.gmtime()[0] <= 2021:
+    elif badge.pressed(BUTTON_B) or time.gmtime()[0] <= 2021:
         user_message("Please Wait!", ["Connecting to WiFi..."])
         wifi.connect()
         # Block until WiFi is connected or an error occurs
@@ -645,18 +639,18 @@ def update():
 
 
     # And then we detect button presses and act accordingly.
-    if io.BUTTON_UP in io.pressed or io.BUTTON_DOWN in io.pressed:
+    if badge.pressed(BUTTON_UP) or badge.pressed(BUTTON_DOWN):
         state["dark_mode"] = not state["dark_mode"]
         write_settings()
         switch_palette()
 
-    elif io.BUTTON_C in io.pressed:
+    elif badge.pressed(BUTTON_C):
         state["clock_style"] += 1
         if state["clock_style"] > 4:
             state["clock_style"] = 1
         write_settings()
 
-    elif io.BUTTON_A in io.pressed:
+    elif badge.pressed(BUTTON_A):
         state["clock_style"] -= 1
         if state["clock_style"] < 1:
             state["clock_style"] = 4
@@ -664,13 +658,7 @@ def update():
 
     # We then get the current time, and set an RTC alarm to wake up at the start of
     # the next minute and run all this again, so the clock can update.
-    currenttime = rtc.datetime()
-    minutes = (currenttime[4] + 1) % 60
-    hours = currenttime[3]
-    if minutes == 0:
-        hours += 1
-    hours = hours % 24
-    rtc.set_alarm(0, minutes, hours)
+    rtc.set_alarm(minutes=1)
     display_time()
 
 
@@ -679,8 +667,7 @@ def init():
 
 
 def on_exit():
-    rtc.enable_alarm_interrupt(False)
-    rtc.enable_timer_interrupt(False)
+    rtc.clear_alarm()
 
 
 # Standalone support for Thonny debugging
