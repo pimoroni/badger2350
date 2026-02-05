@@ -29,7 +29,7 @@ if (EXISTS "${PIMORONI_TOOLS_DIR}/ffsmake/build/ffsmake" AND EXISTS "${PIMORONI_
     MESSAGE("ffsmake: Using root ${PIMORONI_FATFS_DIR}.")
     MESSAGE("ffsmake: Outputting filesystem binary: ${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin")
     add_custom_target("${MICROPY_TARGET}-fatfs.bin" ALL
-        COMMAND "${PIMORONI_TOOLS_DIR}/ffsmake/build/ffsmake" --sector-count=3076 --force --directory "${PIMORONI_FATFS_DIR}" --output "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin"
+        COMMAND "${PIMORONI_TOOLS_DIR}/ffsmake/build/ffsmake" --label="${PIMORONI_FATFS_LABEL}" --sector-count=3076 --force --directory "${PIMORONI_FATFS_DIR}" --output "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin"
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "ffsmake: Packing FatFS filesystem to ${MICROPY_TARGET}-fatfs.bin."
         DEPENDS ${MICROPY_TARGET}

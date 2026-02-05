@@ -1,7 +1,15 @@
+import os
 import powman
+from badgeware import fatal_error
 
 if powman.get_wake_reason() == powman.WAKE_DOUBLETAP:
     import _msc  # noqa: F401
+
+
+try:
+    os.listdir("/system")
+except OSError:
+    fatal_error("System Error!", "Unable to mount filesystem. This may be a temporary error, try resetting your board again.")
 
 
 try:
