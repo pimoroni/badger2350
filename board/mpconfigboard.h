@@ -38,6 +38,10 @@ int mp_hal_is_pin_reserved(int n);
 
 #define MICROPY_PY_THREAD                       (0)
 
+// Configure USB
+#define MICROPY_HW_USB_VID                      (0x2e8a)
+#define MICROPY_HW_USB_PID                      (0x1100)
+
 #define MICROPY_HW_USB_MSC                      (1)
 #define MICROPY_HW_USB_DESC_STR_MAX             (40)
 #define MICROPY_HW_USB_MANUFACTURER_STRING      "Pimoroni"
