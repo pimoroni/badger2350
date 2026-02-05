@@ -1,22 +1,16 @@
 builtins = [
-    "mode",
-    "FAST_UPDATE",
-    "FULL_UPDATE",
-    "MEDIUM_UPDATE",
-    "DITHER",
-    "SpriteSheet",
-    "load_font",
-    "rom_font",
-    "clamp",
-    "rnd",
-    "frnd",
+# micropython
+    "micropython",
+    "const",
+    "ptr8",
+    "ptr32",
+
+# picovector
     "algorithm",
     "brush",
     "color",
-    "default_target",
     "font",
     "image",
-    "io",
     "mat3",
     "pen",
     "pixel_font",
@@ -24,8 +18,48 @@ builtins = [
     "rect",
     "shape",
     "screen",
-    "text_tokenise",
-    "text_draw"
+
+# badgeware.py
+    "display",
+    "run",
+    "fatal_error",
+
+# math.py
+    "clamp",
+    "rnd",
+    "frnd",
+
+# text.py
+    "rom_font",
+    "load_font",
+    "text",
+
+# sprite.py
+    "SpriteSheet",
+    "AnimatedSprite",
+
+# filesystem.py
+    "file_exists",
+    "is_dir",
+
+# rtc.py
+    "rtc",
+
+# badge.py
+    "badge",
+    "HIRES",
+    "LORES",
+    "VSYNC",
+    "FAST_UPDATE",
+    "FULL_UPDATE",
+    "MEDIUM_UPDATE",
+    "DITHER",
+    "BUTTON_A",
+    "BUTTON_B",
+    "BUTTON_C",
+    "BUTTON_UP",
+    "BUTTON_DOWN",
+    "BUTTON_HOME"
 ]
 
 # Include:
