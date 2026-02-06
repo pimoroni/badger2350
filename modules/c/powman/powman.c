@@ -19,9 +19,6 @@ uint32_t user_button_state = 0;
 
 // This is effectively the sequence order for the swooshy LED effect
 const uint led_gpios[4] = {BW_LED_1, BW_LED_2, BW_LED_3, BW_LED_0};
-//const uint led_gpios_poweron[4] = {BW_LED_0, BW_LED_2, BW_LED_3, BW_LED_1};
-
-//#define DEBUG
 
 static inline bool double_tap_flag_is_set(void) {
     return powman_hw->chip_reset & POWMAN_CHIP_RESET_DOUBLE_TAP_BITS;
@@ -109,12 +106,6 @@ void pcf85063_wakeup_init(uint8_t period) {
     // And ensure a 32738 Hz clockout
     pcf85063_clear_timer_flag();
 
-    // Switch into seconds to time anything 4 minutes and under
-    //if (period <= 4) {
-    //    period *= 60;
-    //    timer_mode = 0b00010000; // 0b10 == seconds
-    //}
-
     buf[0] = 0x10; // Timer_value
     buf[1] = period; // Set the timer period (in seconds)
     i2c_write_blocking(BW_RTC_I2C, BW_RTC_ADDR, buf, 2, false);
@@ -132,18 +123,7 @@ void powman_init() {
     // Run everything from pll_usb pll and stop pll_sys
     set_sys_clock_48mhz();
 
-    // Use the 32768 Hz clockout from the RTC to keep time accurately
-    //clock_configure_gpin(clk_ref, 12, 32.768f * KHZ, 32.768f * KHZ);
-    //clock_configure_gpin(clk_sys, 12, 32.768f * KHZ, 32.768f * KHZ);
-    //clock_configure_undivided(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, 32.768f * KHZ);
-    //powman_timer_set_1khz_tick_source_lposc_with_hz(32768);
-
-    // Redundant? - we're using the RTC clock
-    //powman_timer_set_1khz_tick_source_lposc();
-
-    // Does this accomplish *anything*?
-    //pll_deinit(pll_sys);
-
+    // Set up GPIO for optimum power consumption
     for (int i = 0; i < NUM_BANK0_GPIOS; ++i) {
         gpio_set_function(i, GPIO_FUNC_SIO);
         gpio_set_dir(i, GPIO_IN);
@@ -173,6 +153,10 @@ void powman_init() {
     // Unlock the VREG control interface
     hw_set_bits(&powman_hw->vreg_ctrl, POWMAN_PASSWORD_BITS | POWMAN_VREG_CTRL_UNLOCK_BITS);
 
+    // Note, in case where USB has not been initialised - IE: we're handling this
+    // before TinyUSB's tusb_init() - we need to initialise the USB peripheral so
+    // the usb_hw->phy_direct_override power config will take effect.
+
     // Reset usb controller
     reset_block_mask(RESETS_RESET_USBCTRL_BITS);
     unreset_block_mask_wait_blocking(RESETS_RESET_USBCTRL_BITS);
@@ -180,17 +164,13 @@ void powman_init() {
     // Mux the controller to the onboard usb phy
     usb_hw->muxing = USB_USB_MUXING_TO_PHY_BITS | USB_USB_MUXING_SOFTCON_BITS;
 
-    // Initializes the USB peripheral for device mode and enables it.
-    // Don't need to enable the pull up here. Force VBUS
+    // Initialize the USB peripheral for device mode and enable it.
     usb_hw->main_ctrl = USB_MAIN_CTRL_CONTROLLER_EN_BITS;
 
-    // Enable individual controller IRQS here. Processor interrupt enable will be used
-    // for the global interrupt enable...
-    // Note: Force VBUS detect cause disconnection not detectable
+    // Enable individual controller IRQS
     usb_hw->sie_ctrl = USB_SIE_CTRL_EP0_INT_1BUF_BITS;
     usb_hw->inte = USB_INTS_BUFF_STATUS_BITS | USB_INTS_BUS_RESET_BITS | USB_INTS_SETUP_REQ_BITS |
-                    USB_INTS_DEV_SUSPEND_BITS | USB_INTS_DEV_RESUME_FROM_HOST_BITS | USB_INTS_DEV_CONN_DIS_BITS;
-
+                   USB_INTS_DEV_SUSPEND_BITS | USB_INTS_DEV_RESUME_FROM_HOST_BITS | USB_INTS_DEV_CONN_DIS_BITS;
 
     // Turn off USB PHY and apply pull downs on DP & DM
     usb_hw->phy_direct = USB_USBPHY_DIRECT_TX_PD_BITS | USB_USBPHY_DIRECT_RX_PD_BITS | USB_USBPHY_DIRECT_DM_PULLDN_EN_BITS | USB_USBPHY_DIRECT_DP_PULLDN_EN_BITS;
@@ -309,6 +289,8 @@ int powman_off_for_ms(uint64_t duration_ms) {
 }
 
 static inline void setup_gpio(bool buttons_only) {
+    // Note: BW_CHARGE_STAT is on RM2
+
     // Init all button GPIOs
     gpio_init_mask(BW_SWITCH_MASK);
     gpio_set_dir_in_masked(BW_SWITCH_MASK);
@@ -342,11 +324,6 @@ static inline void setup_gpio(bool buttons_only) {
     gpio_set_dir(BW_VBUS_DETECT, GPIO_IN);
     gpio_set_pulls(BW_VBUS_DETECT, false, false);
 
-    // Init the charge status detect
-    //gpio_init(BW_CHARGE_STAT);
-    //gpio_set_dir(BW_CHARGE_STAT, GPIO_IN);
-    //gpio_set_pulls(BW_CHARGE_STAT, false, false);
-
     // Set up LEDs
     gpio_init_mask(0b1111);
     gpio_set_dir_out_masked(0b1111);
@@ -373,8 +350,6 @@ static inline void latch_inputs(void) {
 static inline void setup_system(void) {
     i2c_enable();
     pcf85063_disable_interrupt();
-    // vreg_set_voltage(VREG_VOLTAGE_1_20);
-    // sleep_ms(10);
 }
 
 static int64_t alarm_clear_double_tap(alarm_id_t id, __unused void *user_data) {
@@ -397,9 +372,7 @@ void long_press_sleep() {
     setup_gpio(true);
 
     int err;
-    //(void)powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP0_CH, BW_VBUS_DETECT, true, true, 1000);
     err = powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP1_CH, BW_RTC_ALARM, true, false, 1000);
-    //err = powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP2_CH, BW_RESET_SW, true, true, 1000);
     err = powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP3_CH, BW_SWITCH_INT, true, false, 1000);
     (void)err;
 
@@ -466,7 +439,6 @@ static void __attribute__((constructor)) powman_startup(void) {
     // If we haven't reset via a button press we ought not to delay startup
     if (!(powman_hw->chip_reset & POWMAN_CHIP_RESET_HAD_RUN_LOW_BITS) || watchdog_caused_reboot()) {
         setup_system();
-        //power_on_leds();
         return;
     };
 
@@ -482,7 +454,6 @@ static void __attribute__((constructor)) powman_startup(void) {
         }
 
         setup_system();
-        //power_on_leds();
         return;
     }
     clear_double_tap_flag();
