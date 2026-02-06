@@ -71,12 +71,6 @@ void i2c_enable(void) {
     gpio_set_function(BW_RTC_I2C_SCL, GPIO_FUNC_I2C);
 }
 
-void i2c_disable(void) {
-    gpio_init(BW_SW_POWER_EN);
-    gpio_init(BW_RTC_I2C_SDA);
-    gpio_init(BW_RTC_I2C_SCL);
-}
-
 static inline uint8_t pcf85063_get_timer_flag() {
     uint8_t buf = 0x01;
     i2c_write_blocking(BW_RTC_I2C, BW_RTC_ADDR, &buf, 1, false);
@@ -390,7 +384,6 @@ static int64_t alarm_clear_double_tap(alarm_id_t id, __unused void *user_data) {
 
 void shipping_mode() {
     powman_init();
-    i2c_disable();
     int rc = powman_off();
     hard_assert(rc == PICO_OK);
     hard_assert(false); // should never get here!
@@ -410,7 +403,6 @@ void long_press_sleep() {
     err = powman_setup_gpio_wakeup(POWMAN_WAKE_PWRUP3_CH, BW_SWITCH_INT, true, false, 1000);
     (void)err;
 
-    i2c_disable();
     int rc = powman_off();
     hard_assert(rc == PICO_OK);
     hard_assert(false); // should never get here!
