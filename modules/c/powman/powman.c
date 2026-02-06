@@ -416,6 +416,15 @@ void long_press_sleep() {
     hard_assert(false); // should never get here!
 }
 
+void disable_caselight_pwm() {
+    for(unsigned i = 0u; i < 4; i++) {
+        pwm_set_enabled(pwm_gpio_to_slice_num(led_gpios[i]), false);
+    }
+    gpio_init_mask(0b1111);
+    gpio_set_dir_out_masked(0b1111);
+    gpio_put_masked(0b1111, 0);
+}
+
 void handle_long_press() {
     pwm_config config = pwm_get_default_config();
     pwm_config_set_clkdiv(&config, clock_get_hz(clk_sys) / 2048.0f);
@@ -444,8 +453,10 @@ void handle_long_press() {
         if(cbr > 0 && level == 0) {
             clear_double_tap_flag();
             if(!gpio_get(BW_SWITCH_UP) && !gpio_get(BW_SWITCH_DOWN)) {
+                disable_caselight_pwm();
                 shipping_mode();
             } else {
+                disable_caselight_pwm();
                 long_press_sleep();
             }
             break; // unreachable
@@ -453,12 +464,7 @@ void handle_long_press() {
         br++;
         sleep_ms(LED_DELAY_MS);
     }
-    for(unsigned i = 0u; i < 4; i++) {
-        pwm_set_enabled(pwm_gpio_to_slice_num(led_gpios[i]), false);
-    }
-    gpio_init_mask(0b1111);
-    gpio_set_dir_out_masked(0b1111);
-    gpio_put_masked(0b1111, 0);
+    disable_caselight_pwm();
 }
 
 static void __attribute__((constructor)) powman_startup(void) {
