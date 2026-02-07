@@ -25,6 +25,8 @@ include(pimoroni_i2c/micropython)
 include(modules/c/ssd1680/micropython)
 include(modules/c/picovector/micropython)
 
+target_compile_definitions(usermod_picovector INTERFACE BADGER=1 PICO=1)
+
 include(qrcode/micropython/micropython)
 
 # Sensors & Breakouts
