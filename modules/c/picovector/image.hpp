@@ -111,18 +111,23 @@ namespace picovector {
       pixel_font_t *pixel_font();
       void pixel_font(pixel_font_t *pixel_font);
 
-      uint32_t pixel_unsafe(int x, int y);
-      uint32_t pixel(int x, int y);
       void span(int x, int y, int w);
       void masked_span(int x, int y, int w, uint8_t *mask);
+
+
+      // raster primitives
       void clear();
-      //void clear(uint32_t c);
       void rectangle(rect_t r);
       void triangle(vec2_t p1, vec2_t p2, vec2_t p3);
       void round_rectangle(const rect_t &r, int radius);
       void circle(const vec2_t &p, const int &r);
       void ellipse(const vec2_t &p, const int &rx, const int &ry);
       void line(vec2_t p1, vec2_t p2);
+
+      // vector shapes
+      void shape(shape_t *shape);
+
+      // pixel accessors
       void put(const vec2_t &p1);
       void put(int x, int y);
       void put_unsafe(int x, int y);
@@ -130,33 +135,18 @@ namespace picovector {
       uint32_t get(int x, int y);
       uint32_t get_unsafe(int x, int y);
 
-      // image filters
+      // filters
       void blur(float radius);
       void dither();
-      void monochrome();
       void onebit();
-// pixel(x, y, col) or set(x, y, col)
-// 	•	line(x0, y0, x1, y1)
-// 	•	rect(x, y, w, h)
-// 	•	rect_fill(x, y, w, h)
-// 	•	circ(x, y, r)
-// 	•	circ_fill(x, y, r)
-// 	•	tri(x0, y0, x1, y1, x2, y2)
-// 	•	tri_fill(...)
-// 	•	poly(points…)
-// 	•	poly_fill(...)
+      void monochrome();
 
-
-
-
-      void draw(shape_t *shape);
+      // blitting
       void blit(image_t *t, const vec2_t p);
       void blit(image_t *t, rect_t tr);
       void blit(image_t *t, rect_t sr, rect_t tr);
-
-
-
-      void vspan_tex(image_t *target, vec2_t p, uint c, vec2_t uvs, vec2_t uve);
+      void blit_hspan(image_t *target, vec2_t p, int c, vec2_t uv0, vec2_t uv1);
+      void blit_vspan(image_t *target, vec2_t p, int c, vec2_t uv0, vec2_t uv1);
   };
 
 }

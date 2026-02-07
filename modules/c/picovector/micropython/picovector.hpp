@@ -39,6 +39,10 @@ extern "C" {
     mp_obj_t fhandle;
   } png_handle_t;
 
+  typedef struct _jpeg_handle_t {
+    mp_obj_t fhandle;
+  } jpeg_handle_t;
+
   typedef struct _font_obj_t {
     mp_obj_base_t base;
     font_t font;
@@ -82,12 +86,13 @@ extern "C" {
   // used by image.pen = N and picovector.pen() (global pen)
   extern brush_obj_t *mp_obj_to_brush(size_t n_args, const mp_obj_t *args);
 
-  // image.cpp uses pngdec_open_callback from image_png
-  extern void *pngdec_open_callback(const char *filename, int32_t *size);
-  extern void pngdec_close_callback(void *handle);
-  extern int32_t pngdec_read_callback(PNGFILE *png, uint8_t *p, int32_t c);
-  extern int32_t pngdec_seek_callback(PNGFILE *png, int32_t p);
-  extern void pngdec_decode_callback(PNGDRAW *pDraw);
+  // image.cpp uses pngdec_open_file and pngdec_open_ram from image_png
+  extern int pngdec_open_file(image_obj_t &target, const char* path);
+  extern int pngdec_open_ram(image_obj_t &target, const void* buffer, const size_t size);
+
+  // ... and jpegdec_open_file and jpegdec_open_ram from image_jpeg
+  extern int jpegdec_open_file(image_obj_t &target, const char* path);
+  extern int jpegdec_open_ram(image_obj_t &target, const void* buffer, const size_t size);
 }
 
 extern rect_t mp_obj_get_rect(mp_obj_t rect_in);

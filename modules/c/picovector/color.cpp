@@ -18,7 +18,7 @@ namespace picovector {
   }
 
   hsv_color_t::hsv_color_t(uint8_t h, uint8_t s, uint8_t v, uint8_t a) : _h(h), _s(s), _v(v), _a(a) {
-    int hs = (h * 256) / 360;
+    int hs = (h * 360) / 255;
     int region = hs / 60;
     int remainder = (hs - (region * 60)) * 255 / 60;
 
@@ -67,12 +67,7 @@ namespace picovector {
     float C = t * OKLCH_MAX_CHROMA;
 
     // Wrap hue and convert to radians
-    if (h < 0) {
-      h %= 360;
-      if (h < 0) h += 360;
-    }
-    h %= 360;
-    float hs = (float)h * (float)M_PI / 180.0f;
+    float hs = (float)((h * 360) / 255) * (float)M_PI / 180.0f;
 
     // OKLCH → OKLab
     float a_ = C * cosf(hs);

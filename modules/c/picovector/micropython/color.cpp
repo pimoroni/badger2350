@@ -95,6 +95,10 @@ extern "C" {
     constexpr size_t DELETE = 0b1 << 29;
 
     switch(attr | action) {
+      case MP_QSTR_p | GET:
+        dest[0] = mp_obj_new_int(self->c->_p);
+        return;
+
       // case MP_QSTR_r | GET:
       //   dest[0] = mp_obj_new_int(get_r(&self->c));
       //   return;
@@ -143,6 +147,16 @@ extern "C" {
 
     dest[1] = MP_OBJ_SENTINEL;
   }
+
+  // static void color_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+  //   self(self_in, color_obj_t);
+
+  //   if(self->c.a() == 255) {
+  //     mp_printf(print, "color(r=%d, g=%d, b=%d)", self->c.r(), self->c.g(), self->c.b());
+  //   }else{
+  //     mp_printf(print, "color(r=%d, g=%d, b=%d, a=%d)", self->c.r(), self->c.g(), self->c.b(), self->c.a());
+  //   }
+  // }
 
 #ifdef TUFTY
   rgb_color_t _color_black  = rgb_color_t(0x14, 0x1e, 0x28, 0xff);
@@ -232,6 +246,7 @@ extern "C" {
       type_color,
       MP_QSTR_color,
       MP_TYPE_FLAG_NONE,
+      //print, (const void *)color_print,
       attr, (const void *)attr,
       locals_dict, &color_locals_dict
   );

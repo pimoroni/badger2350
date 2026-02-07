@@ -47,12 +47,8 @@ namespace picovector {
       // find the glyph
       for(int j = 0; j < this->glyph_count; j++) {
         if(this->glyphs[j].codepoint == uint16_t(c)) {
-          float a = this->glyphs[j].advance;
-          transform = transform.translate(a, 0);
-          vec2_t caret(1, 1);
-          caret = caret.transform(transform);
-          r.w = max(r.w, caret.x);
-          r.h = max(r.y, caret.y);
+          r.w += float(this->glyphs[j].advance) * (size / 128.0f);
+          r.h = size;
         }
       }
     }

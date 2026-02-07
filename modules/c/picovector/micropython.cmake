@@ -1,6 +1,7 @@
 add_library(usermod_picovector INTERFACE)
 
 include(modules/c/pngdec/pngdec)
+include(modules/c/jpegdec/jpegdec)
 
 list(APPEND SOURCES
   ${CMAKE_CURRENT_LIST_DIR}/micropython/picovector_bindings.c
@@ -25,6 +26,7 @@ list(APPEND SOURCES
   ${CMAKE_CURRENT_LIST_DIR}/micropython/brush.cpp
   ${CMAKE_CURRENT_LIST_DIR}/micropython/color.cpp
   ${CMAKE_CURRENT_LIST_DIR}/micropython/font.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/micropython/image_jpeg.cpp
   ${CMAKE_CURRENT_LIST_DIR}/micropython/image_png.cpp
   ${CMAKE_CURRENT_LIST_DIR}/micropython/image.cpp
   ${CMAKE_CURRENT_LIST_DIR}/micropython/input.cpp
@@ -44,9 +46,7 @@ target_include_directories(usermod_picovector INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
-target_compile_definitions(usermod_picovector INTERFACE PICO=1 BADGER=1)
-
-target_link_libraries(usermod INTERFACE usermod_picovector pngdec hardware_interp)
+target_link_libraries(usermod INTERFACE usermod_picovector pngdec jpegdec hardware_interp)
 
 set_source_files_properties(
   ${SOURCES}

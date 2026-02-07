@@ -6,6 +6,8 @@ extern "C" {
   #include "py/stream.h"
   #include "py/reader.h"
   #include "py/runtime.h"
+  #include "py/objstr.h"
+
 
   mp_obj_t image__del__(mp_obj_t self_in) {
     self(self_in, image_obj_t);
@@ -34,27 +36,37 @@ MPY_BIND_NEW(image, {
     return MP_OBJ_FROM_PTR(self);
 })
 
-MPY_BIND_STATICMETHOD_ARGS1(load, path, {
-    const char *s = mp_obj_str_get_str(path);
-    image_obj_t *result = mp_obj_malloc_with_finaliser(image_obj_t, &type_image);
+void image_open_helper(image_obj_t &target, mp_obj_t path_or_bytes_in) {
+  int status = 0;
+  if(mp_obj_is_str(path_or_bytes_in)) {
+    const char *path = mp_obj_str_get_str(path_or_bytes_in);
+    status = pngdec_open_file(target, path);
+    if(status != PNG_SUCCESS) {
+      status = jpegdec_open_file(target, path);
+    }
+  } else {
+    mp_buffer_info_t buf;
+    mp_get_buffer_raise(path_or_bytes_in, &buf, MP_BUFFER_READ);
+    status = pngdec_open_ram(target, buf.buf, buf.len);
+    if(status != PNG_SUCCESS) {
+      status = jpegdec_open_ram(target, buf.buf, buf.len);
+    }
+  }
+  if(status != 0) {
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unable to read image! %d"), status);
+  }
+}
 
-    PNG *png = new(PicoVector_working_buffer) PNG();
-    int status = png->open(mp_obj_str_get_str(path), pngdec_open_callback, pngdec_close_callback, pngdec_read_callback, pngdec_seek_callback, pngdec_decode_callback);
-    bool has_palette = png->getPixelType() == PNG_PIXEL_INDEXED;
-    result->image = new(m_malloc(sizeof(image_t))) image_t(png->getWidth(), png->getHeight(), RGBA8888, has_palette);
-    png->decode((void *)result->image, 0);
-    png->close();
+MPY_BIND_STATICMETHOD_ARGS1(load, path_or_bytes_in, {
+    image_obj_t *result = mp_obj_malloc_with_finaliser(image_obj_t, &type_image);
+    result->image = nullptr;
+    image_open_helper(*result, path_or_bytes_in);
     return MP_OBJ_FROM_PTR(result);
   })
 
-MPY_BIND_CLASSMETHOD_ARGS1(load_into, path, {
+MPY_BIND_CLASSMETHOD_ARGS1(load_into, path_or_bytes_in, {
     self(self_in, image_obj_t);
-    //const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
-    PNG *png = new(PicoVector_working_buffer) PNG();
-    int status = png->open(mp_obj_str_get_str(path), pngdec_open_callback, pngdec_close_callback, pngdec_read_callback, pngdec_seek_callback, pngdec_decode_callback);
-    bool has_palette = png->getPixelType() == PNG_PIXEL_INDEXED;
-    png->decode((void *)self->image, 0);
-    png->close();
+    image_open_helper(*self, path_or_bytes_in);
     return mp_const_none;
   })
 
@@ -86,34 +98,12 @@ MPY_BIND_VAR(2, window, {
     return MP_OBJ_FROM_PTR(result);
   })
 
-
-  // MPY_BIND_VAR(2, clip, {
-  //   const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
-
-  //   if(mp_obj_is_type(args[1], &type_rect)) {
-  //     const rect_obj_t *rect = (rect_obj_t *)MP_OBJ_TO_PTR(args[1]);
-  //     self->image->clip(rect->rect);
-  //     return mp_const_none;
-  //   }
-
-  //   if(n_args == 5) {
-  //     int x = mp_obj_get_float(args[1]);
-  //     int y = mp_obj_get_float(args[2]);
-  //     int w = mp_obj_get_float(args[3]);
-  //     int h = mp_obj_get_float(args[4]);
-  //     self->image->clip(rect_t(x, y, w, h));
-  //     return mp_const_none;
-  //   }
-
-  //   mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either clip(r) or clip(x, y, w, h)"));
-  // })
-
   MPY_BIND_VAR(2, shape, {
     const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
 
     if (mp_obj_is_type(args[1], &type_shape)) {
       const shape_obj_t *shape = (shape_obj_t *)MP_OBJ_TO_PTR(args[1]);
-      self->image->draw(shape->shape);
+      self->image->shape(shape->shape);
       return mp_const_none;
     }
 
@@ -123,7 +113,7 @@ MPY_BIND_VAR(2, window, {
       mp_obj_list_get(args[1], &len, &items);
       for(size_t i = 0; i < len; i++) {
         const shape_obj_t *shape = (shape_obj_t *)MP_OBJ_TO_PTR(items[i]);
-        self->image->draw(shape->shape);
+        self->image->shape(shape->shape);
       }
       return mp_const_none;
     }
@@ -230,16 +220,16 @@ MPY_BIND_VAR(1, dither, {
   })
 
 
-MPY_BIND_VAR(1, monochrome, {
+MPY_BIND_VAR(1, onebit, {
     const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
-    self->image->monochrome();
+    self->image->onebit();
     return mp_const_none;
   })
 
 
-MPY_BIND_VAR(1, onebit, {
+MPY_BIND_VAR(1, monochrome, {
     const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
-    self->image->onebit();
+    self->image->monochrome();
     return mp_const_none;
   })
 
@@ -254,7 +244,8 @@ MPY_BIND_VAR(2, get, {
       point = mp_obj_get_vec2_from_xy(&args[1]);
     }
     color_obj_t *color = mp_obj_malloc(color_obj_t, &type_color);
-    color->c->_p = self->image->get(point.x, point.y);
+    uint32_t c = self->image->get(point.x, point.y);
+    color->c = new rgb_color_t(_r(c), _g(c), _b(c), _a(c));
     return MP_OBJ_FROM_PTR(color);
   })
 
@@ -327,14 +318,89 @@ MPY_BIND_VAR(2, measure_text, {
     return mp_obj_new_tuple(2, result);
   })
 
-MPY_BIND_VAR(9, vspan_tex, {
+  // MPY_BIND_VAR(2, shape, {
+  //   const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
+
+  //   if (mp_obj_is_type(args[1], &type_shape)) {
+  //     const shape_obj_t *shape = (shape_obj_t *)MP_OBJ_TO_PTR(args[1]);
+  //     self->image->shape(shape->shape);
+  //     return mp_const_none;
+  //   }
+
+  //   if (mp_obj_is_type(args[1], &mp_type_list)) {
+  //     size_t len;
+  //     mp_obj_t *items;
+  //     mp_obj_list_get(args[1], &len, &items);
+  //     for(size_t i = 0; i < len; i++) {
+  //       const shape_obj_t *shape = (shape_obj_t *)MP_OBJ_TO_PTR(items[i]);
+  //       self->image->shape(shape->shape);
+  //     }
+  //     return mp_const_none;
+  //   }
+
+  //   mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either shape(s) or shape([s1, s2, s3, ...])"));
+  // })
+
+
+  MPY_BIND_VAR(6, blit_vspan, {
     const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
     const image_obj_t *src = (image_obj_t *)MP_OBJ_TO_PTR(args[1]);
-    vec2_t p = mp_obj_get_vec2_from_xy(&args[2]);
-    int c = mp_obj_get_float(args[4]);
-    vec2_t us_vs = mp_obj_get_vec2_from_xy(&args[5]);
-    vec2_t ue_ve = mp_obj_get_vec2_from_xy(&args[7]);
-    src->image->vspan_tex(self->image, p, c, us_vs, ue_ve);
+
+    vec2_t p; // position on screen to start rendering span
+    int c; // height of span
+    vec2_t uv0; // start uv coordinate
+    vec2_t uv1; // end uv coordinate
+
+    if(n_args == 6) {
+      p = mp_obj_get_vec2(args[2]);
+      c = mp_obj_get_float(args[3]);
+      uv0 = mp_obj_get_vec2(args[4]);
+      uv1 = mp_obj_get_vec2(args[5]);
+    } else if(n_args == 9) {
+      p.x = mp_obj_get_float(args[2]);
+      p.y = mp_obj_get_float(args[3]);
+      c = mp_obj_get_float(args[4]);
+      uv0.x = mp_obj_get_float(args[5]);
+      uv0.y = mp_obj_get_float(args[6]);
+      uv1.x = mp_obj_get_float(args[7]);
+      uv1.y = mp_obj_get_float(args[8]);
+    } else {
+      mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either blit_vspan(p, c, uvs, uve) or blit_vspan(x, y, x, uvsx, uvsy, uvex, uvey)"));
+    }
+
+    src->image->blit_vspan(self->image, p, c, uv0, uv1);
+
+    return mp_const_none;
+  })
+
+  MPY_BIND_VAR(6, blit_hspan, {
+    const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
+    const image_obj_t *src = (image_obj_t *)MP_OBJ_TO_PTR(args[1]);
+
+    vec2_t p; // position on screen to start rendering span
+    int c; // height of span
+    vec2_t uvs; // start uv coordinate
+    vec2_t uve; // end uv coordinate
+
+    if(n_args == 6) {
+      p = mp_obj_get_vec2(args[2]);
+      c = mp_obj_get_float(args[3]);
+      uvs = mp_obj_get_vec2(args[4]);
+      uve = mp_obj_get_vec2(args[5]);
+    } else if(n_args == 9) {
+      p.x = mp_obj_get_float(args[2]);
+      p.y = mp_obj_get_float(args[3]);
+      c = mp_obj_get_float(args[4]);
+      uvs.x = mp_obj_get_float(args[5]);
+      uvs.y = mp_obj_get_float(args[6]);
+      uve.x = mp_obj_get_float(args[7]);
+      uve.y = mp_obj_get_float(args[8]);
+    } else {
+      mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either blit_hspan(p, c, uvs, uve) or blit_hspan(x, y, x, uvsx, uvsy, uvex, uvey)"));
+    }
+
+    src->image->blit_hspan(self->image, p, c, uvs, uve);
+
     return mp_const_none;
   })
 
@@ -347,6 +413,12 @@ MPY_BIND_VAR(3, blit, {
 
       if(n_args == 3 && mp_obj_is_vec2(args[2])) {
         src->image->blit(self->image, mp_obj_get_vec2(args[2]));
+        return mp_const_none;
+      }
+
+      if(n_args == 4 && mp_obj_is_float(args[2]) && mp_obj_is_float(args[3])) {
+        vec2_t p = mp_obj_get_vec2_from_xy(&args[2]);
+        src->image->blit(self->image, p);
         return mp_const_none;
       }
 
@@ -367,14 +439,7 @@ MPY_BIND_VAR(3, blit, {
 
 MPY_BIND_VAR(1, clear, {
     const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
-
-    // if(n_args == 2) {
-    //   const color_obj_t *color = (color_obj_t *)MP_OBJ_TO_PTR(args[1]);
-    //   self->image->clear(color->c);
-    // }else{
-      self->image->clear();
-//    }
-
+    self->image->clear();
     return mp_const_none;
   })
 
@@ -533,13 +598,121 @@ MPY_BIND_ATTR(image, {
     return 0;
   }
 
+  /*
+    takes a list of commands to perform, each command is a tuple containing the
+    method/attribute name and a single argument or tuple of arguments.
+
+    [
+      ("clear"),                          # calling a method with no parameters
+      ("pen", color.blue),                # setting an attribute
+      ("rectangle", (10, 10, 50, 50)),    # calling a raster draw method
+      ("circle", (50, 50, 20)),           # calling another raster draw method
+      "dither"                            # also calling a method with no parameters
+    ]
+  */
+  MPY_BIND_VAR(2, batch, {
+    const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
+    if (!mp_obj_is_type(args[1], &mp_type_list)) {
+      mp_raise_TypeError(MP_ERROR_TEXT("invalid parameters, expected list of draw commands"));
+    }
+
+    // dummy args object we use to call method handlers
+    mp_obj_t handler_args[32];
+    handler_args[0] = args[0]; // set "self" ahead of time
+
+    // get the list of commands
+    size_t ncommands;
+    mp_obj_t *commands;
+    mp_obj_list_get(args[1], &ncommands, &commands);
+
+    for(size_t i = 0; i < ncommands; i++) {
+      // command can either be a tuple with a qstr and parameters, or just a
+      // qstr if the method takes no parameters
+      if(!mp_obj_is_type(commands[i], &mp_type_tuple)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("list entries must be tuples in the format (command, parameter1, parameter2, ...)"));
+      }
+
+      // get the list of commands
+      size_t ncommand;
+      mp_obj_t *command;
+      mp_obj_tuple_get(commands[i], &ncommand, &command);
+
+      qstr name = mp_obj_str_get_qstr(command[0]);
+
+      size_t nparameters = ncommand - 1;
+      for(size_t j = 1; j < ncommand; j++) {
+        handler_args[j] = command[j];
+      }
+
+      if(nparameters == 1) {
+        // if a single value provided, attempt to use that to set an
+        // attribute
+        mp_obj_t dest[2];
+        dest[0] = MP_OBJ_SENTINEL;
+        dest[1] = handler_args[1];
+        image_attr(handler_args[0], name, dest);
+        if(dest[0] == MP_OBJ_NULL) {
+          // attribute was found and set, skip to next command
+          continue;
+        }
+      }
+
+      // handler is also passed reference to "self"
+      size_t nhandler_args = nparameters + 1;
+      switch (name) {
+        case MP_QSTR_clear: {
+          mpy_binding_clear(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_rectangle: {
+          mpy_binding_rectangle(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_line: {
+          mpy_binding_line(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_circle: {
+          mpy_binding_circle(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_triangle: {
+          mpy_binding_triangle(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_put: {
+          mpy_binding_put(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_blur: {
+          mpy_binding_blur(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_dither: {
+          mpy_binding_dither(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_shape: {
+          mpy_binding_shape(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_text: {
+          mpy_binding_text(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_blit_vspan: {
+          mpy_binding_blit_vspan(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_blit_hspan: {
+          mpy_binding_blit_hspan(nhandler_args, handler_args);
+        } break;
+        case MP_QSTR_blit: {
+          mpy_binding_blit(nhandler_args, handler_args);
+        } break;
+
+        default: mp_raise_ValueError(MP_ERROR_TEXT("unknown method"));
+      }
+    }
+
+    return mp_const_none;
+  })
+
 MPY_BIND_LOCALS_DICT(image,
       { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&image__del___obj) },
 
       MPY_BIND_ROM_PTR_STATIC(load),
       MPY_BIND_ROM_PTR(load_into),
       MPY_BIND_ROM_PTR(window),
-      //MPY_BIND_ROM_PTR(clip),
 
       // primitives
       MPY_BIND_ROM_PTR(clear),
@@ -547,13 +720,13 @@ MPY_BIND_LOCALS_DICT(image,
       MPY_BIND_ROM_PTR(line),
       MPY_BIND_ROM_PTR(circle),
       MPY_BIND_ROM_PTR(triangle),
-      MPY_BIND_ROM_PTR(get), // Wont get real pixel value due to premult
+      MPY_BIND_ROM_PTR(get),
       MPY_BIND_ROM_PTR(put),
 
       MPY_BIND_ROM_PTR(blur),
       MPY_BIND_ROM_PTR(dither),
-      MPY_BIND_ROM_PTR(monochrome),
       MPY_BIND_ROM_PTR(onebit),
+      MPY_BIND_ROM_PTR(monochrome),
 
       // vector
       MPY_BIND_ROM_PTR(shape),
@@ -563,8 +736,11 @@ MPY_BIND_LOCALS_DICT(image,
       MPY_BIND_ROM_PTR(measure_text),
 
       // blitting
-      MPY_BIND_ROM_PTR(vspan_tex),
+      MPY_BIND_ROM_PTR(blit_vspan),
+      MPY_BIND_ROM_PTR(blit_hspan),
       MPY_BIND_ROM_PTR(blit),
+
+      MPY_BIND_ROM_PTR(batch),
 
       // TODO: Just define these in MicroPython?
       { MP_ROM_QSTR(MP_QSTR_X4), MP_ROM_INT(antialias_t::X4)},
