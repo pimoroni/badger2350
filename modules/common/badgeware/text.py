@@ -91,7 +91,7 @@ class _text:
         image.clip = bounds
 
         c = vec2(bounds.x, bounds.y)
-        b = rect()
+        b = rect(bounds.x, bounds.y, 0, 0)
         for token in tokens:
             font_height = size if isinstance(image.font, font) else image.font.height
             if token[0] == WORD:
@@ -116,8 +116,10 @@ class _text:
                 token[0](image, token[2], c, False)
                 c.x += token[1]
 
-            b.w = max(b.w, c.x)
-            b.h = max(b.h, c.y)
+            if token[0] != SPACE:
+                b.w = max(b.w, c.x - b.x)
+
+            b.h = max(b.h, c.y - b.y)
 
         image.clip = old_clip
         return b
