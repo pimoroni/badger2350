@@ -99,6 +99,23 @@ namespace picovector {
     }
   }
 
+  static uint16_t get_utf8_char(const char *text, const char *end) {
+    uint16_t codepoint;
+    if((*text & 0x80) == 0x00) {
+      codepoint = *text; // ASCII, codepoints U+0000...U007F
+    }
+    else if( ((*text & 0xE0) == 0xC0) && (text+1 <= end) && ((*(text+1) & 0xC0) == 0x80) ) {
+      codepoint = ((uint16_t)(*text & 0x1F) << 6) + (*(text+1) & 0x3F); //codepoints U+0080...U+07FF
+    }
+    else if( ((*text & 0xF0) == 0xE0) && (text+2 <= end) && ((*(text+1) & 0xC0) == 0x80) && ((*(text+2) & 0xC0) == 0x80) ) {
+      codepoint = ((uint16_t)(*text & 0x0F) << 12) + ((uint16_t)(*(text+1) & 0x3F) << 6) + (*(text+2) & 0x3F); // codepoints U+0800...U+FFFF
+    }
+    else {
+      codepoint = 0xFFFF; // malformed UTF-8 sequences or unsupported codepoints starting at U+10000
+    }
+    return codepoint;
+  }
+
   void pixel_font_t::draw(image_t *target, const char *text, int x, int y) {
     // check if text is within clipping area
     rect_t text_bounds = this->measure(target, text);
@@ -114,6 +131,8 @@ namespace picovector {
 
     brush_t *brush = target->brush();
 
+    const char *end = text + strlen(text);
+
     while(*text != '\0') {
       // special case for "space"
       if(*text == 32) {
@@ -122,7 +141,8 @@ namespace picovector {
         continue;
       }
 
-      int glyph_index = this->glyph_index(*text);
+      int codepoint = get_utf8_char(text, end);
+      int glyph_index = this->glyph_index(codepoint);
       if(glyph_index != -1) {
         pixel_font_glyph_t *glyph = &this->glyphs[glyph_index];
         uint8_t *data = &this->glyph_data[this->glyph_data_size * glyph_index];
@@ -130,6 +150,13 @@ namespace picovector {
         draw_glyph(target, glyph, data, brush, bounds, x, y);
 
         x += glyph->width + 1;
+      }
+
+      if(codepoint > 0x7F) {
+        text++;
+      }
+      if(codepoint > 0x7FF) {
+        text++;
       }
 
       text++;
