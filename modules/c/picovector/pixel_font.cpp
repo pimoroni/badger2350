@@ -116,6 +116,14 @@ namespace picovector {
     return codepoint;
   }
 
+  static inline uint8_t utf8_seq_len(uint8_t b0) {
+    if ((b0 & 0x80) == 0x00) return 1;
+    if ((b0 & 0xE0) == 0xC0) return 2;
+    if ((b0 & 0xF0) == 0xE0) return 3;
+    if ((b0 & 0xF8) == 0xF0) return 4;
+    return 0; // invalid
+  }
+
   void pixel_font_t::draw(image_t *target, const char *text, int x, int y) {
     // check if text is within clipping area
     rect_t text_bounds = this->measure(target, text);
@@ -152,14 +160,7 @@ namespace picovector {
         x += glyph->width + 1;
       }
 
-      if(codepoint > 0x7F) {
-        text++;
-      }
-      if(codepoint > 0x7FF) {
-        text++;
-      }
-
-      text++;
+      text += utf8_seq_len(*text);
     }
 
   }
