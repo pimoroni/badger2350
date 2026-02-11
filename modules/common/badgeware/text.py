@@ -124,7 +124,7 @@ class _text:
 
     # Draw scrolling text into a given window
     @staticmethod
-    def scroll(text, font_face=None, font_size=None, target=None, speed=25, gap=None):
+    def scroll(text, font_face=None, font_size=None, target=None, speed=25, gap=None, align="middle"):
         font_face = font_face or rom_font.sins
 
         is_vector_font = isinstance(font_face, font)
@@ -144,7 +144,15 @@ class _text:
 
         t_start = badge.ticks
 
-        offset = vec2(0, (target.height - th) // 2)
+        offset_y = align if isinstance(align, int) else 0
+
+        if align == "middle":
+            offset_y = (target.height - th) // 2
+
+        if align == "bottom":
+            offset_y = target.height - th
+
+        offset = vec2(0, offset_y)
 
         def update():
             timedelta = badge.ticks - t_start
