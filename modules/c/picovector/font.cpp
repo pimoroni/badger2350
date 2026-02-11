@@ -56,6 +56,23 @@ namespace picovector {
     return r;
   }
 
+  static uint16_t get_utf8_char(const char *text, const char *end) {
+    uint16_t codepoint;
+    if((*text & 0x80) == 0x00) {
+      codepoint = *text; // ASCII, codepoints U+0000...U007F
+    }
+    else if( ((*text & 0xE0) == 0xC0) && (text+1 <= end) && ((*(text+1) & 0xC0) == 0x80) ) {
+      codepoint = ((uint16_t)(*text & 0x1F) << 6) + (*(text+1) & 0x3F); //codepoints U+0080...U+07FF
+    }
+    else if( ((*text & 0xF0) == 0xE0) && (text+2 <= end) && ((*(text+1) & 0xC0) == 0x80) && ((*(text+2) & 0xC0) == 0x80) ) {
+      codepoint = ((uint16_t)(*text & 0x0F) << 12) + ((uint16_t)(*(text+1) & 0x3F) << 6) + (*(text+2) & 0x3F); // codepoints U+0800...U+FFFF
+    }
+    else {
+      codepoint = 0xFFFF; // malformed UTF-8 sequences or unsupported codepoints starting at U+10000
+    }
+    return codepoint;
+  }
+
   void font_t::draw(image_t *target, const char *text, float x, float y, float size) {
     vec2_t caret(x, y);
 
@@ -64,17 +81,31 @@ namespace picovector {
     transform = transform.translate(0, size);
     transform = transform.scale(size / 128.0f, size / 128.0f);
 
+    const char *end = text + strlen(text);
 
-    for(size_t i = 0; i < strlen(text); i++) {
-      char c = text[i];
+    while(text != end) {
+      // find the uft8 codepoint
+      uint16_t codepoint = get_utf8_char(text, end);
+
       // find the glyph
       for(int j = 0; j < this->glyph_count; j++) {
-        if(this->glyphs[j].codepoint == uint16_t(c)) {
+        if(this->glyphs[j].codepoint == codepoint) {
           render_glyph(&this->glyphs[j], target, &transform, target->brush());
           float a = this->glyphs[j].advance;
           transform = transform.translate(a, 0);
+          break;
         }
       }
+
+      if(codepoint > 0x7F) {
+        text++;
+      }
+
+      if(codepoint > 0x7FF) {
+        text++;
+      }
+
+      text++;
     }
   }
 
