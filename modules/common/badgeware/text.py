@@ -124,16 +124,15 @@ class _text:
 
     # Draw scrolling text into a given window
     @staticmethod
-    def scroll(text, font_face=None, bg=None, fg=None, target=None, speed=25, continuous=False, font_size=None):
+    def scroll(text, font_face=None, font_size=None, target=None, speed=25, gap=None):
         font_face = font_face or rom_font.sins
-        fg = fg or color.rgb(128, 128, 128)
 
         is_vector_font = isinstance(font_face, font)
 
         if is_vector_font and font_size is None:
             raise ValueError("scroll_text: vector fonts require a font_size")
 
-        target = target or screen.window(0, 0, screen.width, screen.height)
+        target = target or screen
         target.font = font_face
 
         tw, th = target.measure_text(text, font_size) if isinstance(font_face, font) else target.measure_text(text)
@@ -141,7 +140,7 @@ class _text:
         if is_vector_font:
             th = font_size
 
-        scroll_distance = tw + (0 if continuous else target.width)
+        scroll_distance = tw + (gap if isinstance(gap, int) else target.width)
 
         t_start = badge.ticks
 
@@ -154,22 +153,20 @@ class _text:
             timedelta %= scroll_distance
             timedelta /= scroll_distance
 
-            if continuous:
+            if isinstance(gap, int):
                 offset.x = -scroll_distance * timedelta
             else:
                 offset.x = target.width - (scroll_distance * timedelta)
 
             target.font = font_face
-            if bg is not None:
-                target.pen = bg
-                target.clear()
-            target.pen = fg
 
             # The "font_size" argument is ignored for vector text
             target.text(text, offset, font_size)
 
-            if continuous:
-                target.text(text, offset + vec2(tw, 0), font_size)
+            if isinstance(gap, int):
+                while offset.x + tw < target.width:
+                    offset.x += tw + gap
+                    target.text(text, offset, font_size)
 
             return progress
 
