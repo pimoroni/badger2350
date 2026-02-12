@@ -2,6 +2,7 @@ import gc
 from io import StringIO
 import sys
 import time
+import os
 
 import machine
 import ssd1680
@@ -17,58 +18,103 @@ def set_brightness(value):
     pass
 
 
+def reset():
+    # HOME is also BOOT; if we reset while it's
+    # low we'll end up in bootloader mode.
+    while not machine.Pin.board.BUTTON_HOME.value():
+        pass
+    machine.reset()
+
+
 def run(update, init=None, on_exit=None):
-    screen.font = DEFAULT_FONT
-    screen.pen = color.white
-    screen.clear()
-    screen.pen = badge.default_pen()
-    first_refresh = True
+    state = {
+        "active": 0,
+        "running": "/system/apps/menu"
+    }
+    State.load("menu", state)
 
     try:
-        if init:
-            init()
-        try:
-            badge.poll()
-            while True:
-                if badge.default_clear() is not None:
-                    screen.pen = badge.default_clear()
-                    screen.clear()
-                screen.pen = badge.default_pen()
-                if (result := update()) is not None:
-                    return result
-                gc.collect()
+        screen.font = DEFAULT_FONT
 
-                # Perform the dither on the screen raw buffer
-                if badge.mode() & DITHER:
-                    screen.dither()
+        if isinstance(update, str):
+            path = update
+            os.chdir(path)
+            sys.path.insert(0, path)
+            app = __import__(path)
+            update = app.update
+            init = getattr(app, "init", None)
+            on_exit = getattr(app, "on_exit", None)
 
-                if first_refresh:
-                    display.speed(0)
-
-                display.update()
-
-                if first_refresh:
-                    display.speed((badge.mode() >> 4) & 0xf)
-                    first_refresh = False
-
-                # Wait for input or sleep
-                t_start = time.ticks_ms()
-                while True:
-                    badge.poll()
-                    if badge.pressed():
-                        break
-                    if rtc.alarm_status():
-                        rtc.clear_alarm()
-                        break
-                    # put the unit to sleep if button input times out and the unit is not connected via USB
-                    if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and not badge.usb_connected():
-                        badge.sleep()
-        finally:
+        def do_exit():
             if on_exit:
                 on_exit()
 
+        def quit_to_launcher(_pin):
+            do_exit()
+
+            # Clear the currently running app from the menu's state
+            state["running"] = "/system/apps/menu"
+            State.modify("menu", state)
+
+            reset()
+
+        machine.Pin.board.BUTTON_HOME.irq(
+            trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher
+        )
+
+        if badge.default_clear() is None:
+            screen.pen = color.white
+            screen.clear()
+
+        first_refresh = True
+
+        if init:
+            init()
+            gc.collect()
+
+        # Load the startup inputs
+        badge.poll()
+
+        while True:
+            if badge.default_clear() is not None:
+                screen.pen = badge.default_clear()
+                screen.clear()
+            screen.pen = badge.default_pen()
+            if (result := update()) is not None:
+                return result
+            gc.collect()
+
+            # Perform the dither on the screen raw buffer
+            if badge.mode() & DITHER:
+                screen.dither()
+
+            if first_refresh:
+                display.speed(0)
+
+            display.update()
+
+            if first_refresh:
+                display.speed((badge.mode() >> 4) & 0xf)
+                first_refresh = False
+
+            # Wait for input or sleep
+            t_start = time.ticks_ms()
+            while True:
+                badge.poll()
+                if badge.pressed():
+                    break
+                if rtc.alarm_status():
+                    rtc.clear_alarm()
+                    break
+                # put the unit to sleep if button input times out and the unit is not connected via USB
+                if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and not badge.usb_connected():
+                    badge.sleep()
+
     except Exception as e:  # noqa: BLE001
-        fatal_error("Error!", get_exception(e))
+        fatal_error("Error!", get_exception(e)) 
+
+    finally:
+        do_exit()
 
 
 def get_exception(e):
