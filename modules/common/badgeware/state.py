@@ -1,5 +1,6 @@
 import os
 import json
+import builtins
 
 class State:
     @staticmethod
@@ -43,3 +44,6 @@ class State:
 
         State.save(app, defaults)
         return False
+
+
+builtins.State = State
