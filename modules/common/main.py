@@ -1,6 +1,5 @@
 import os
 import powman
-from badgeware import fatal_error
 
 if powman.get_wake_reason() == powman.WAKE_DOUBLETAP:
     import _msc  # noqa: F401
@@ -9,7 +8,7 @@ if powman.get_wake_reason() == powman.WAKE_DOUBLETAP:
 try:
     os.listdir("/system")
 except OSError:
-    fatal_error("System Error!", "Unable to mount filesystem. This may be a temporary error, try resetting your board again.")
+    fatal_error("System Error!", "Unable to mount filesystem. This may be a temporary error, try resetting your board!")
 
 
 try:
@@ -18,10 +17,8 @@ try:
 except OSError:
     pass
 
+
 try:
-    __import__("/main")
+    __import__("/system/main")
 except ImportError:
-    try:
-        __import__("/system/main")
-    except ImportError:
-        import _error  # noqa: F401
+    fatal_error("System Error!", "Could not find main.py. Please double-tap RESET to switch into USB Mass Storage mode and replace it!")
