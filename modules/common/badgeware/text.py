@@ -206,9 +206,15 @@ def load_font(font_file):
 
 
 class ROMFonts:
+    _cache = {}
+
     def __getattr__(self, key):
+        return ROMFonts._cache.get(key, None) or self._load_font(key)
+
+    def _load_font(self, key):
         try:
-            return pixel_font.load(f"/rom/fonts/{key}.ppf")
+            ROMFonts._cache[key] = pixel_font.load(f"/rom/fonts/{key}.ppf")
+            return ROMFonts._cache[key]
         except OSError as e:
             raise AttributeError(f"Font {key} not found!") from e
 
