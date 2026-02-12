@@ -45,6 +45,9 @@ builtins = [
 # rtc.py
     "rtc",
 
+# state.py
+    "State",
+
 # badge.py
     "badge",
     "HIRES",
