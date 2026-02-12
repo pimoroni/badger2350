@@ -111,7 +111,7 @@ def run(update, init=None, on_exit=None):
                     badge.sleep()
 
     except Exception as e:  # noqa: BLE001
-        fatal_error("Error!", get_exception(e)) 
+        fatal_error("Error!", get_exception(e))
 
     finally:
         do_exit()
