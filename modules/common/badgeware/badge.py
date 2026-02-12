@@ -144,21 +144,15 @@ class Badge():
 
         return False
 
-    def disk_free(self, mountpoint="/"):
+    def disk_free(self, mountpoint="/system"):
         # f_bfree and f_bavail should be the same?
         # f_files, f_ffree, f_favail and f_flag are unsupported.
-        f_bsize, f_frsize, f_blocks, f_bfree, _, _, _, _, _, f_namemax = os.statvfs(
-            mountpoint
-        )
+        f_bsize, f_frsize, f_blocks, f_bfree = os.statvfs(mountpoint)[:4]
 
         f_total_size = f_frsize * f_blocks
         f_total_free = f_bsize * f_bfree
-        f_total_used = f_total_size - f_total_free
 
-        f_used = 100 / f_total_size * f_total_used
-        f_free = 100 / f_total_size * f_total_free
-
-        return f_total_size, f_used, f_free
+        return f_total_size, f_total_size - f_total_free, f_total_free
 
     def light_level(self):
         # TODO: Returning the raw u16 is a little meh here, can we do an approx lux conversion?
