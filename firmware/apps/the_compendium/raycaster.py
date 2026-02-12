@@ -176,11 +176,10 @@ def draw_wall_slice(current_level, tilemap, ray_hit, y_scale):
         wall_height = (screen.height * y_scale) / ray_hit.distance
     topend = SCREEN_CENTRE_Y - (wall_height / 2)
 
-    # convert the 0-1 value of that u coordinate to
-    u = math.floor(ray_hit.offset * TEXTURE_SIZE)
+    u = ray_hit.offset
 
     if ray_hit.orientation == 2 or ray_hit.orientation == 3:
-        u = TEXTURE_SIZE - u - 1
+        u = 1.0 - u
 
     map_def = current_level.map_defs[ray_hit.index]
     v = map_def.texture - 1
@@ -197,7 +196,7 @@ def draw_wall_slice(current_level, tilemap, ray_hit, y_scale):
 
     screen.pen = color.black
 
-    screen.vspan_tex(texture, ray_hit.screen_x, topend, wall_height, u, 0, u, TEXTURE_SIZE - 1)
+    screen.blit_vspan(texture, vec2(ray_hit.screen_x, topend), wall_height, vec2(u, 0.0), vec2(u, 1.0))
 
 
 def draw_entity(ray_hit, y_scale):
