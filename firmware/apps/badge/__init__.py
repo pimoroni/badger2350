@@ -13,7 +13,11 @@ screen.antialias = screen.X2
 # details to be shown on the card
 id_photo = image.load("avatar.png")
 id_name = "Your Name"
-id_role = "Job title"
+id_role = "Job Title"
+
+id_window = image(id_photo.width, id_photo.height)
+id_window.blit(id_photo, vec2(0, 0))
+id_window.dither()
 
 # see the 'assets/social' folder to see what's supported
 id_socials = {"bluesky": {"icon": None, "handle": "@bluesky"},
@@ -27,7 +31,7 @@ for key in id_socials.keys():
     id_socials[key]["icon"] = image.load(f"assets/socials/{key}.png")
 
 # id card variables
-id_body = shape.rectangle(0, 0, 240, 155 )
+id_body = shape.rectangle(0, 0, 240, 155)
 id_outline = shape.rectangle(0, 0, 240, 155).stroke(2)
 background = brush.pattern(color.black, color.white, 6)
 rear_view = False
@@ -91,7 +95,7 @@ def update():
     screen.pen = color.black
     if not rear_view:
         screen.font = large_font
-        screen.blit(id_photo, vec2(CX - id_photo.width / 2, y + 15))
+        screen.blit(id_window, vec2(CX - id_photo.width / 2, y + 15))
         center_text(id_name, photo_y)
         screen.font = small_font
         center_text(id_role, photo_y + 31)
