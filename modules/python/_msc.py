@@ -33,7 +33,7 @@ large_font = rom_font.nope
 
 def activity_leds(_t):
     busy = rp2.is_msc_busy()
-    badge.set_caselights(int(busy))
+    badge.caselights(int(busy))
 
 
 activity_timer = Timer()

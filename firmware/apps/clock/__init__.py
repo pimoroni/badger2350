@@ -17,7 +17,7 @@ import wifi
 
 
 # Set the LED to light whenever the unit's active.
-badge.set_caselights(0.1)
+badge.caselights(0.1)
 
 # Clear any previously set RTC flags.
 rtc.clear_alarm()

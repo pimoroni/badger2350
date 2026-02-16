@@ -51,12 +51,23 @@ def sample_adc_u16(adc, samples=1):
 class Badge():
     def  __init__(self):
         if MODEL == "badger":
-            self._default_clear = color.white
-            self._default_pen = color.black
+            self.default_clear = color.white
+            self.default_pen = color.black
         else:
-            self._default_clear = color.black
-            self._default_pen = color.white
+            self.default_clear = color.black
+            self.default_pen = color.white
+
+        # current display mode
         self._current_mode = None
+
+        # optional replacement update() function
+        self.update = None
+
+        # either badger, tufty, or blinky
+        self.model = MODEL
+
+        # the system
+        self.uid = UID
 
         self._case_lights = [
             machine.PWM(machine.Pin.board.CL0),
@@ -78,26 +89,9 @@ class Badge():
     def poll(self):
         _input.poll()
 
-    # returns either badger, tufty, or blinky
     @property
-    def model(self):
-        return MODEL
-
-    @property
-    def uid(self):
-        return UID
-
-    def default_clear(self, *args):
-        if len(args) == 0:
-            return self._default_clear
-        self._default_clear = args[0]
-        return None
-
-    def default_pen(self, *args):
-        if len(args) == 0:
-            return self._default_pen
-        self._default_pen = args[0]
-        return None
+    def resolution(self):
+        return screen.width, screen.height
 
     def mode(self, mode=None):
         if mode is None:
@@ -115,12 +109,12 @@ class Badge():
         elif MODEL == "badger":
             display.speed((self._current_mode >> 4) & 0xf)
 
-        # TODO: Mutate the existing screen object?
-        font = getattr(getattr(builtins, "screen", None), "font", None)
-        brush = getattr(getattr(builtins, "screen", None), "pen", None)
-        builtins.screen = image(display.WIDTH, display.HEIGHT, memoryview(display))
-        screen.font = font if font is not None else rom_font.sins
-        screen.pen = brush if brush is not None else self._default_pen
+        if MODEL == "tufty" or getattr(builtins, "screen", None) is None:
+            font = getattr(getattr(builtins, "screen", None), "font", None)
+            brush = getattr(getattr(builtins, "screen", None), "pen", None)
+            builtins.screen = image(display.WIDTH, display.HEIGHT, memoryview(display))
+            screen.font = font if font is not None else rom_font.sins
+            screen.pen = brush if brush is not None else self.default_pen
 
         return None
 
@@ -180,26 +174,22 @@ class Badge():
             return _input.changed
         return button in _input.changed
 
-    def resolution(self):
-        return screen.width, screen.height
+    def caselights(self, *args):
+        if len(args) == 1:
+            for cl in self._case_lights:
+                cl.duty_u16(int(args[0] * 65535))
 
-    def set_caselights(self, v1, v2=None, v3=None, v4=None):
-        if v2 is None:
-            v4 = v3 = v2 = v1
+        elif len(args) == 4:
+            for idx, cl in enumerate(self._case_lights):
+                cl.duty_u16(int(args[idx] * 65535))
 
-        self._case_lights[0].duty_u16(int(v1 * 65535))
-        self._case_lights[1].duty_u16(int(v2 * 65535))
-        self._case_lights[2].duty_u16(int(v3 * 65535))
-        self._case_lights[3].duty_u16(int(v4 * 65535))
-
-    def get_caselights(self):
-        return [light.duty_u16() / 65535 for light in self._case_lights]
+        return [cl.duty_u16() / 65535 for cl in self._case_lights]
 
     def sleep(self, duration=None):
         powman.goto_dormant_for(duration) if duration else powman.sleep()
 
     def wake_reason(self):
-        pass
+        return powman.get_wake_reason()
 
     def woken_by_button(self):
         return powman.get_wake_reason() in (
@@ -211,8 +201,6 @@ class Badge():
         )
 
     def pressed_to_wake(self, button):
-        # TODO: BUTTON_HOME cannot be a wake button
-        # so maybe raise an exception
         return button in powman.get_wake_buttons()
 
     def woken_by_reset(self):

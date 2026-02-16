@@ -62,7 +62,7 @@ def run(update, init=None, on_exit=None):
             trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher
         )
 
-        if badge.default_clear() is None:
+        if badge.default_clear is None:
             screen.pen = color.white
             screen.clear()
 
@@ -76,10 +76,10 @@ def run(update, init=None, on_exit=None):
         badge.poll()
 
         while True:
-            if badge.default_clear() is not None:
-                screen.pen = badge.default_clear()
+            if badge.default_clear is not None:
+                screen.pen = badge.default_clear
                 screen.clear()
-            screen.pen = badge.default_pen()
+            screen.pen = badge.default_pen
             if (result := update()) is not None:
                 return result
             gc.collect()
@@ -237,5 +237,5 @@ State = __import__(".frozen/badgeware/state").State
 DEFAULT_FONT = rom_font.sins
 
 badge.mode(LORES | VSYNC)
-badge.default_pen(color.black)
-badge.default_clear(color.white)
+badge.default_pen = color.black
+badge.default_clear = color.white
