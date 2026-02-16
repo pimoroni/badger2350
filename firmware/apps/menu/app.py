@@ -31,7 +31,7 @@ class App:
 
         # transform to the icon position
         icon_rect.transform = mat3().translate(self.pos.x - 30, self.pos.y - 30)
-        screen.pen = color.black
+        screen.pen = color.dark_grey
         screen.shape(icon_rect)
 
         icon_rect.transform = mat3().translate(self.pos.x - 32, self.pos.y - 32)
