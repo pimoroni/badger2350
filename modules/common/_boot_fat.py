@@ -8,7 +8,6 @@ import machine  # noqa: F401
 
 USER_FLASH_SIZE = rp2.Flash().ioctl(4, 0) * rp2.Flash().ioctl(5, 0)
 LFS_SIZE = 1024 * 1024  # 1MB root filesystem
-FS_LABEL = os.uname().machine.split(" ")[1]
 
 
 bdev_lfs = rp2.Flash(start=USER_FLASH_SIZE - LFS_SIZE, len=LFS_SIZE)
