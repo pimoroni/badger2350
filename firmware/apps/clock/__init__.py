@@ -291,14 +291,7 @@ def draw_scribble_clock(currenttime):
     month = calendar_months[currenttime[1]]
     mday = currenttime[2]
 
-    suffix = "th"
-    mday_units = mday % 10
-    if mday_units == 1:
-        suffix = "st"
-    if mday_units == 2:
-        suffix = "nd"
-    if mday_units == 3:
-        suffix = "rd"
+    suffix = "th" if 4 <= mday % 100 <= 20 else {1:"st",2:"nd",3:"rd"}.get(mday % 10, "th")
 
     date = str(mday) + suffix + " " + month + " " + str(year)
 
