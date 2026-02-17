@@ -69,6 +69,9 @@ class Badge():
         # the system
         self.uid = UID
 
+        self._case_light_values = [
+            0, 0, 0, 0
+        ]
         self._case_lights = [
             machine.PWM(machine.Pin.board.CL0),
             machine.PWM(machine.Pin.board.CL1),
@@ -77,6 +80,7 @@ class Badge():
         ]
         for led in self._case_lights:
             led.freq(500)
+            led.duty_u16(0)
 
     @property
     def ticks(self):
@@ -175,15 +179,13 @@ class Badge():
         return button in _input.changed
 
     def caselights(self, *args):
-        if len(args) == 1:
-            for cl in self._case_lights:
-                cl.duty_u16(int(args[0] * 65535))
+        if args:
+            self._case_light_values[:] = (args[0], ) * 4 if len(args) == 1 else args
 
-        elif len(args) == 4:
             for idx, cl in enumerate(self._case_lights):
-                cl.duty_u16(int(args[idx] * 65535))
+                cl.duty_u16(int(self._case_light_values[idx] ** 2.2 * 65535))
 
-        return [cl.duty_u16() / 65535 for cl in self._case_lights]
+        return list(self._case_light_values)
 
     def sleep(self, duration=None):
         powman.goto_dormant_for(duration) if duration else powman.sleep()
