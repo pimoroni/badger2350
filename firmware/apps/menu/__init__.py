@@ -30,7 +30,9 @@ if state["active"] >= len(apps):
 
 
 def update():
-    global active, apps
+    global apps
+
+    active = state["active"]
 
     # process button inputs to switch between apps
     if badge.pressed(BUTTON_C):
@@ -46,9 +48,17 @@ def update():
         if state["active"] >= len(apps):
             state["active"] = len(apps) - 1
 
+    changed = state["active"] != active
+
+    # If the state hasn't changed ad we're not handling
+    # the initial display refresh, do not refresh the screen
+    if not changed and not badge.first_update:
+        return False
+
     apps.activate(state["active"])
 
-    State.modify("menu", state)
+    if changed:
+        State.modify("menu", state)
 
     if badge.pressed(BUTTON_B):
         state["running"] = f"/system/apps/{apps.active.path}"
@@ -67,7 +77,6 @@ def update():
     apps.draw_label()
 
     return None
-
 
 if __name__ == "__main__":
     run(update)

@@ -66,7 +66,7 @@ def run(update, init=None, on_exit=None):
             screen.pen = color.white
             screen.clear()
 
-        first_refresh = True
+        badge.first_update = True
 
         if init:
             init()
@@ -80,22 +80,30 @@ def run(update, init=None, on_exit=None):
                 screen.pen = badge.default_clear
                 screen.clear()
             screen.pen = badge.default_pen
-            if (result := update()) is not None:
+
+            update_display = True
+            result = update()
+
+            if result in (True, False, None):
+                update_display = result in (True, None)
+            else:
                 return result
+
             gc.collect()
 
             # Perform the dither on the screen raw buffer
             if badge.mode() & DITHER:
                 screen.dither()
 
-            if first_refresh:
-                display.speed(0)
+            if update_display:
+                if badge.first_update:
+                    display.speed(0)
 
-            display.update()
+                display.update()
 
-            if first_refresh:
-                display.speed((badge.mode() >> 4) & 0xf)
-                first_refresh = False
+                if badge.first_update:
+                    display.speed((badge.mode() >> 4) & 0xf)
+                    badge.first_update = False
 
             # Wait for input or sleep
             t_start = time.ticks_ms()
