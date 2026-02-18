@@ -69,6 +69,9 @@ class Badge():
         # the system
         self.uid = UID
 
+        # track first display update, for badger
+        self.first_update = True
+
         self._case_light_values = [
             0, 0, 0, 0
         ]
