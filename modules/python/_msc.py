@@ -6,6 +6,10 @@ import binascii
 import uctypes
 
 
+# Disarm the home button to help mitigate unwanted resets in MSC mode
+BUTTON_HOME.irq(None)
+
+
 # Get a CRC of the FAT (first 16k of the user filesystem) ~16ms
 CACHE_FILE = "/.fsbackup"
 
