@@ -17,12 +17,12 @@ builtins.FULL_UPDATE = 0 << 4
 builtins.MEDIUM_UPDATE = 2 << 4
 builtins.DITHER = 1 << 8
 
-builtins.BUTTON_A = _input.BUTTON_A
-builtins.BUTTON_B = _input.BUTTON_B
-builtins.BUTTON_C = _input.BUTTON_C
-builtins.BUTTON_UP = _input.BUTTON_UP
-builtins.BUTTON_DOWN = _input.BUTTON_DOWN
-builtins.BUTTON_HOME = _input.BUTTON_HOME
+builtins.BUTTON_A = machine.Pin.board.BUTTON_A
+builtins.BUTTON_B = machine.Pin.board.BUTTON_B
+builtins.BUTTON_C = machine.Pin.board.BUTTON_C
+builtins.BUTTON_UP = machine.Pin.board.BUTTON_UP
+builtins.BUTTON_DOWN = machine.Pin.board.BUTTON_DOWN
+builtins.BUTTON_HOME = machine.Pin.board.BUTTON_HOME
 
 
 VBAT_SENSE = machine.ADC(machine.Pin.board.VBAT_SENSE)

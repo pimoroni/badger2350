@@ -16,6 +16,9 @@ extern "C" {
   #include "py/runtime.h"
   #include "py/mphal.h"
 
+  // For machine_pin_find
+  #include "machine_pin.h"
+
 mp_obj_t ticks;
 
 #ifdef PICO
@@ -67,27 +70,27 @@ mp_obj_t ticks;
       }
       int n = 0;
       if(buttons & BUTTON_HOME) {
-        t_items[n] = MP_ROM_INT(BUTTON_HOME);
+        t_items[n] = MP_OBJ_FROM_PTR(machine_pin_find(MP_ROM_INT(BW_SWITCH_HOME)));
         n++;
       }
       if(buttons & BUTTON_A) {
-        t_items[n] = MP_ROM_INT(BUTTON_A);
+        t_items[n] = MP_OBJ_FROM_PTR(machine_pin_find(MP_ROM_INT(BW_SWITCH_A)));
         n++;
       }
       if(buttons & BUTTON_B) {
-        t_items[n] = MP_ROM_INT(BUTTON_B);
+        t_items[n] = MP_OBJ_FROM_PTR(machine_pin_find(MP_ROM_INT(BW_SWITCH_B)));
         n++;
       }
       if(buttons & BUTTON_C) {
-        t_items[n] = MP_ROM_INT(BUTTON_C);
+        t_items[n] = MP_OBJ_FROM_PTR(machine_pin_find(MP_ROM_INT(BW_SWITCH_C)));
         n++;
       }
       if(buttons & BUTTON_UP) {
-        t_items[n] = MP_ROM_INT(BUTTON_UP);
+        t_items[n] = MP_OBJ_FROM_PTR(machine_pin_find(MP_ROM_INT(BW_SWITCH_UP)));
         n++;
       }
       if(buttons & BUTTON_DOWN) {
-        t_items[n] = MP_ROM_INT(BUTTON_DOWN);
+        t_items[n] = MP_OBJ_FROM_PTR(machine_pin_find(MP_ROM_INT(BW_SWITCH_DOWN)));
         n++;
       }
       dest[0] = mp_obj_new_tuple(n, t_items);
@@ -131,14 +134,7 @@ mp_obj_t ticks;
   })
 
   static const mp_rom_map_elem_t input_globals_table[] = {
-    MPY_BIND_ROM_PTR(poll),
-    // TODO Move these to MicroPython?
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_HOME), MP_ROM_INT(BUTTON_HOME) },
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_A),    MP_ROM_INT(BUTTON_A) },
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_B),    MP_ROM_INT(BUTTON_B) },
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_C),    MP_ROM_INT(BUTTON_C) },
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_UP),   MP_ROM_INT(BUTTON_UP) },
-    { MP_ROM_QSTR(MP_QSTR_BUTTON_DOWN), MP_ROM_INT(BUTTON_DOWN) },
+    MPY_BIND_ROM_PTR(poll)
   };
   static MP_DEFINE_CONST_DICT(input_globals, input_globals_table);
 
