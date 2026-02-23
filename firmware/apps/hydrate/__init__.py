@@ -143,6 +143,13 @@ def update():
     draw_graph(CX, CY - 8, 75, state["current"])
     draw_menu()
 
+    # Update the screen
+    badge.update()
+
+    # Wait for a button press or alarm interrupt before continuing,
+    # Sleep after 5 seconds if power is not connected.
+    wait_for_button_or_alarm(timeout=5000)
+
 
 def on_exit():
     State.save("hydrate", state)

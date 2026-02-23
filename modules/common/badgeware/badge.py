@@ -105,12 +105,21 @@ class Badge():
         return True
 
     def update(self):
+        if MODEL == "badger" and badge.first_update:
+            display.speed(0)
+
         # Perform the dither on the screen raw buffer
         if badge.mode() & DITHER:
             screen.dither()
+
         display.update()
         badge.clear()
         badge.poll()
+
+        if MODEL == "badger" and badge.first_update:
+            display.speed((badge.mode() >> 4) & 0xf)
+
+        badge.first_update = False
         return True
 
     def mode(self, mode=None):

@@ -104,5 +104,12 @@ def update():
     # draw the ui
     disk_mode.draw()
 
+    # update the screen
+    badge.update()
+
+    # Wait for a button press or alarm interrupt before continuing,
+    # Never sleep!
+    wait_for_button_or_alarm(timeout=None)
+
 
 run(update)

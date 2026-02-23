@@ -26,6 +26,7 @@ builtins = [
     "loop",
     "reset",
     "fatal_error",
+    "wait_for_button_or_alarm",
 
 # math.py
     "clamp",

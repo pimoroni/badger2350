@@ -653,6 +653,13 @@ def update():
     rtc.set_alarm(minutes=1)
     display_time()
 
+    # Update the screen
+    badge.update()
+
+    # Wait for a button press or alarm interrupt before continuing,
+    # Sleep after 5 seconds if power is not connected.
+    wait_for_button_or_alarm(timeout=5000)
+
 
 def on_exit():
     rtc.clear_alarm()

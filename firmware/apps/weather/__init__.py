@@ -168,6 +168,10 @@ def update():
     # wake up again in 30 minutes to refresh the data
     rtc.set_alarm(minutes=30)
 
+    badge.update()
+
+    badge.sleep()
+
 
 def on_exit():
     rtc.clear_alarm()

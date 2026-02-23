@@ -11,9 +11,6 @@ import builtins
 import picovector
 
 
-SLEEP_TIMEOUT_MS = 5000
-
-
 def set_brightness(value):
     pass
 
@@ -21,8 +18,9 @@ def set_brightness(value):
 def reset():
     # HOME is also BOOT; if we reset while it's
     # low we'll end up in bootloader mode.
-    while not machine.Pin.board.BUTTON_HOME.value():
-        pass
+    badge.poll()
+    while badge.pressed() or badge.held():
+        badge.poll()
     machine.reset()
 
 
@@ -39,7 +37,6 @@ class _run:
         self.start = 0
         self.result = None
         self.duration = duration
-        self.skip_update = False
         if len(args) == 1 and callable(args[0]):
             self(args[0])
 
@@ -51,41 +48,18 @@ class _run:
 
         try:
             while True:
-                if not self.skip_update:
-                    badge.clear()
-
-                self.skip_update = False
-
                 if (result := update()) is not None:
                     self.result = result
                     return
-
-                if not self.skip_update:
-                    if badge.first_update:
-                        display.speed(0)
-
-                    # Perform the dither on the screen raw buffer
-                    if badge.mode() & DITHER:
-                        screen.dither()
-
-                    display.update()
-
-                    if badge.first_update:
-                        display.speed((badge.mode() >> 4) & 0xf)
-                        badge.first_update = False
-
-                if self.duration is None:
-                    wait_for_button_or_alarm()
 
                 if self.duration is not None and self.ticks >= self.duration:
                     return
 
         finally:
-            badge.clear()
             builtins.loop = parent
 
 
-def wait_for_button_or_alarm(timeout=SLEEP_TIMEOUT_MS):
+def wait_for_button_or_alarm(timeout=30_000):
     # Wait for input or sleep
     t_start = time.ticks_ms()
     while True:
@@ -93,10 +67,9 @@ def wait_for_button_or_alarm(timeout=SLEEP_TIMEOUT_MS):
         if badge.pressed():
             break
         if rtc.alarm_status():
-            rtc.clear_alarm()
             break
         # put the unit to sleep if button input times out and the unit is not connected via USB
-        if time.ticks_diff(time.ticks_ms(), t_start) > timeout and not badge.usb_connected():
+        if timeout is not None and time.ticks_diff(time.ticks_ms(), t_start) > timeout and not badge.usb_connected():
             badge.sleep()
 
 

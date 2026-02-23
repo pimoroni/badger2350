@@ -345,5 +345,12 @@ def update():
         }
         State.save("the_compendium", state)
 
+    # Update the screen
+    badge.update()
+
+    # Wait for a button press or alarm interrupt before continuing,
+    # Sleep after 5 seconds if power is not connected.
+    wait_for_button_or_alarm(timeout=5000)
+
 
 run(update)

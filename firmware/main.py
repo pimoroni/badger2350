@@ -1,4 +1,3 @@
-import machine
 import powman
 
 state = {
@@ -19,4 +18,4 @@ launch(app)
 state["running"] = "/system/apps/menu"
 State.modify("menu", state)
 
-machine.reset()
+reset()

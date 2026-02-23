@@ -57,9 +57,8 @@ def update():
     if badge.pressed(BUTTON_B):
         state["running"] = f"/system/apps/{apps.active.path}"
         State.modify("menu", state)
-        while badge.pressed(BUTTON_B) or badge.held(BUTTON_B):
-            badge.poll()
-        return state["running"]
+        # Reset into the newly running app
+        reset()
 
     ui.draw_background()
     ui.draw_header()
@@ -70,11 +69,13 @@ def update():
     # draw label for active menu icon
     apps.draw_label()
 
-    # If the state hasn't changed ad we're not handling
-    # the initial display refresh, do not refresh the screen
-    loop.skip_update = not (changed or badge.first_update)
+    # Update the screen
+    if changed or badge.first_update:
+        badge.update()
 
-    return None
+    # Wait for a button press or alarm interrupt before continuing,
+    # Sleep after 5 seconds if power is not connected.
+    wait_for_button_or_alarm(timeout=5000)
 
 
 run(update)

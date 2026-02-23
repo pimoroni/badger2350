@@ -185,10 +185,6 @@ def update():
                 state["current_item"] += 1
                 changed = True
 
-    if changed:
-        State.save("list", state)
-        changed = False
-
     screen.pen = color.white
     screen.clear()
 
@@ -249,6 +245,17 @@ def update():
         empty_text = "Nothing Here"
         text_length = display.measure_text(empty_text)
         screen.text(empty_text, ((LIST_PADDING + LIST_WIDTH) - text_length) // 2, (LIST_HEIGHT // 2) + LIST_START - (ITEM_SPACING // 4))
+
+    # Update the screen
+    if changed:
+        State.save("list", state)
+        badge.update()
+
+    changed = False
+
+    # Wait for a button press or alarm interrupt before continuing,
+    # Sleep after 5 seconds if power is not connected.
+    wait_for_button_or_alarm(timeout=5000)
 
 
 run(update)
