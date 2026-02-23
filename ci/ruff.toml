@@ -60,6 +60,7 @@ builtins = [
     "FAST_UPDATE",
     "FULL_UPDATE",
     "MEDIUM_UPDATE",
+    "NON_BLOCKING",
     "DITHER",
     "BUTTON_A",
     "BUTTON_B",

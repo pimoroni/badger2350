@@ -107,6 +107,7 @@ class Badge():
         return True
 
     def update(self):
+        # Do a full update to avoid ghosting when switching apps
         if MODEL == "badger" and badge.first_update:
             display.speed(0)
 
@@ -118,8 +119,7 @@ class Badge():
         badge.clear()
         badge.poll()
 
-        # This will effectively cause `display.update()` to block since we
-        # need to wait for the screen to finish before we can update the speed
+        # Set the update back to the user specified speed
         if MODEL == "badger" and badge.first_update:
             display.speed((badge.mode() >> 4) & 0xf)
 

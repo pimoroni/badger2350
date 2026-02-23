@@ -75,13 +75,10 @@ namespace pimoroni {
   bool SSD1680::set_update_speed(int update_speed) {
     // 0 == slow (lut_repeat_count of 3), 3 == fast (lut_repeat_count of 0)
     this->lut_repeat_count = (uint8_t)3 - (uint8_t)(update_speed & 3);
-    write_luts();
     return true;
   }
 
   void SSD1680::write_luts() {
-    busy_wait();
-
     command(WLR, {
 //    Group:
 //    0     1     2     3     4     5     6     7     8     9     10    11
@@ -205,6 +202,9 @@ namespace pimoroni {
   void SSD1680::update() {
     // Wait for any previous update to finish
     busy_wait();
+
+    // Write the LUTs (~200us)
+    write_luts();
 
     command(SRXC, {X_START});
     command(SRYC, {Y_START_L, Y_START_H});
