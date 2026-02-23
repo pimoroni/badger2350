@@ -61,7 +61,7 @@ try:
         list_items = [item.strip() for item in raw_list_items.strip().split("\n")]
 
 except OSError:
-    State.delete("list")
+    pass
 
 
 # Draw the list of items
