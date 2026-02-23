@@ -87,12 +87,12 @@ extern "C" {
   extern brush_obj_t *mp_obj_to_brush(size_t n_args, const mp_obj_t *args);
 
   // image.cpp uses pngdec_open_file and pngdec_open_ram from image_png
-  extern int pngdec_open_file(image_obj_t &target, const char* path);
-  extern int pngdec_open_ram(image_obj_t &target, const void* buffer, const size_t size);
+  extern int pngdec_open_file(image_obj_t &target, const char* path, int target_width, int target_height);
+  extern int pngdec_open_ram(image_obj_t &target, const void* buffer, const size_t size, int target_width, int target_height);
 
   // ... and jpegdec_open_file and jpegdec_open_ram from image_jpeg
-  extern int jpegdec_open_file(image_obj_t &target, const char* path);
-  extern int jpegdec_open_ram(image_obj_t &target, const void* buffer, const size_t size);
+  extern int jpegdec_open_file(image_obj_t &target, const char* path, int target_width, int target_height);
+  extern int jpegdec_open_ram(image_obj_t &target, const void* buffer, const size_t size, int target_width, int target_height);
 }
 
 extern rect_t mp_obj_get_rect(mp_obj_t rect_in);

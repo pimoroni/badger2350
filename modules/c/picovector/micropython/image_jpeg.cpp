@@ -18,36 +18,80 @@ extern "C" {
   static int32_t jpegdec_seek_callback(JPEGFILE *jpeg, int32_t p);
   static int jpegdec_decode_callback(JPEGDRAW *pDraw);
 
-  static inline int jpegdec_decode(image_obj_t &target, JPEGDEC *jpeg) {
-    if(target.image == nullptr) {
-      printf("jpeg decode, new image_t(%d, %d)\n", jpeg->getWidth(), jpeg->getHeight());
-      target.image = new(m_malloc(sizeof(image_t))) image_t(jpeg->getWidth(), jpeg->getHeight(), RGBA8888, false);
+  struct jpecdec_decode_data_t {
+    float x_ratio;
+    float y_ratio;
+    image_t* image;
+  };
+
+  static inline int jpegdec_decode(image_obj_t &target, JPEGDEC *jpeg, int target_width, int target_height) {
+    int scale = 1;
+    jpecdec_decode_data_t decode_data;
+
+    int width = jpeg->getWidth();
+    int height = jpeg->getHeight();
+
+    if (target.image != nullptr) {
+      rect_t bounds = target.image->bounds();
+      target_width = bounds.w;
+      target_height = bounds.h;
     }
 
-    jpeg->setUserPointer((void *)target.image);
+    if (target_width > width) target_width = width;
+    if (target_height > height) target_height = height;
+
+    if(target.image == nullptr) {
+      if (target_width == 0 && target_height == 0) {
+        target_width = width;
+        target_height = height;
+      }
+      else if (target_width != 0 && target_height == 0) {
+        target_height = (height * ((target_width << 16) / width)) >> 16;
+      }
+      else if (target_height != 0 && target_width == 0) {
+        target_width = (width * ((target_height << 16) / height)) >> 16;
+      }
+
+      // Use JPEG scaling if image is much larger than target
+      while (width > target_width << 1 && height > target_height << 1 && scale < 8) {
+        scale <<= 1;
+        width >>= 1;
+        height >>= 1;
+      }
+
+      target.image = new(m_malloc(sizeof(image_t))) image_t(target_width, target_height, RGBA8888, false);
+    }
+
+    decode_data.image = target.image;
+    decode_data.x_ratio = (float)target_width / (float)width;
+    decode_data.y_ratio = (float)target_height / (float)height;
+
+    jpeg->setUserPointer((void *)&decode_data);
     jpeg->setPixelType(RGB888_LITTLE_ENDIAN);
 
-    int status = jpeg->decode(0, 0, 0);
+    int jpeg_options = 0;
+    if (scale > 1) jpeg_options = scale;
+    int status = jpeg->decode(0, 0, jpeg_options);
     jpeg->close();
     return status ? JPEG_SUCCESS : JPEG_DECODE_ERROR;
   }
 
-  int jpegdec_open_ram(image_obj_t &target, const void* buffer, const size_t size) {
+  int jpegdec_open_ram(image_obj_t &target, const void* buffer, const size_t size, int target_width, int target_height) {
     JPEGDEC *jpeg = new(PicoVector_working_buffer) JPEGDEC();
     int status = jpeg->openRAM((uint8_t *)buffer, size, jpegdec_decode_callback);
     if (status != 1) {
       return JPEG_INVALID_FILE;
     }
-    return jpegdec_decode(target, jpeg);
+    return jpegdec_decode(target, jpeg, target_width, target_height);
   }
 
-  int jpegdec_open_file(image_obj_t &target, const char *path) {
+  int jpegdec_open_file(image_obj_t &target, const char *path, int target_width, int target_height) {
     JPEGDEC *jpeg = new(PicoVector_working_buffer) JPEGDEC();
     int status = jpeg->open(path, jpegdec_open_callback, jpegdec_close_callback, jpegdec_read_callback, jpegdec_seek_callback, jpegdec_decode_callback);
     if (status != 1) {
       return JPEG_INVALID_FILE;
     }
-    return jpegdec_decode(target, jpeg);
+    return jpegdec_decode(target, jpeg, target_width, target_height);
   }
 
   static void *jpegdec_open_callback(const char *filename, int32_t *size) {
@@ -101,20 +145,46 @@ extern "C" {
   }
 
   static int jpegdec_decode_callback(JPEGDRAW *pDraw) {
-    image_t *target = (image_t *)pDraw->pUser;
+    jpecdec_decode_data_t* decode_data = (jpecdec_decode_data_t*)pDraw->pUser;
+    image_t *target = decode_data->image;
     uint8_t *pixels = (uint8_t *)pDraw->pPixels;
-    for(int y = 0; y < pDraw->iHeight; y++) {
-        for(int x = 0; x < pDraw->iWidth; x++) {
-            if(x >= pDraw->iWidthUsed) break; // Clip to the used width
-            int offset = (y * pDraw->iWidth + x) * 3;
-            uint8_t r = pixels[offset];
-            uint8_t g = pixels[offset + 1];
-            uint8_t b = pixels[offset + 2];
-            uint32_t *pdst = (uint32_t *)target->ptr(pDraw->x + x, pDraw->y + y);
-            *pdst = rgb_color_t(r, g, b, 255)._p;
-        }
+
+    fx16_t cur_y = f_to_fx16(decode_data->y_ratio * pDraw->y);
+    fx16_t step_x = f_to_fx16(decode_data->x_ratio);
+    fx16_t step_y = f_to_fx16(decode_data->y_ratio);
+
+    int y = 0;
+    
+    while (y < pDraw->iHeight) {
+      int x = 0;
+      fx16_t cur_x = f_to_fx16(decode_data->x_ratio * pDraw->x);
+
+      uint32_t *pdst = (uint32_t *)target->ptr(cur_x >> 16, cur_y >> 16);
+      
+      while (x < pDraw->iWidth) {
+        if(x >= pDraw->iWidthUsed) break; // Clip to the used width
+        int offset = (y * pDraw->iWidth + x) * 3;
+        uint8_t r = pixels[offset];
+        uint8_t g = pixels[offset + 1];
+        uint8_t b = pixels[offset + 2];
+        *pdst++ = rgb_color_t(r, g, b, 255)._p;
+
+        // Assume that scaling has got us close to target resolution, so it's not
+        // worth doing divisions to avoid these loops.
+        fx16_t last_x = cur_x >> 16;
+        do {
+          ++x;
+          cur_x += step_x;
+        } while (cur_x >> 16 == last_x);
+      }
+
+      fx16_t last_y = cur_y >> 16;
+      do {
+        ++y;
+        cur_y += step_y;
+      } while (cur_y >> 16 == last_y);
     }
     return 1;
-}
+  }
 
 }

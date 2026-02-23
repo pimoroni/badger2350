@@ -36,38 +36,39 @@ MPY_BIND_NEW(image, {
     return MP_OBJ_FROM_PTR(self);
 })
 
-void image_open_helper(image_obj_t &target, mp_obj_t path_or_bytes_in) {
-  int png_status = 0;
-  int jpg_status = 0;
+void image_open_helper(image_obj_t &target, mp_obj_t path_or_bytes_in, int target_width, int target_height) {
+  int status = 0;
   if(mp_obj_is_str(path_or_bytes_in)) {
     const char *path = mp_obj_str_get_str(path_or_bytes_in);
-    png_status = pngdec_open_file(target, path);
-    if(png_status != PNG_SUCCESS) {
-      jpg_status = jpegdec_open_file(target, path);
+    status = pngdec_open_file(target, path, target_width, target_height);
+    if(status == PNG_INVALID_FILE) {
+      status = jpegdec_open_file(target, path, target_width, target_height);
     }
   } else {
     mp_buffer_info_t buf;
     mp_get_buffer_raise(path_or_bytes_in, &buf, MP_BUFFER_READ);
-    png_status = pngdec_open_ram(target, buf.buf, buf.len);
-    if(png_status != PNG_SUCCESS) {
-      jpg_status = jpegdec_open_ram(target, buf.buf, buf.len);
+    status = pngdec_open_ram(target, buf.buf, buf.len, target_width, target_height);
+    if(status == PNG_INVALID_FILE) {
+      status = jpegdec_open_ram(target, buf.buf, buf.len, target_width, target_height);
     }
   }
-  if(png_status != 0 && jpg_status != 0) {
-    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unable to read image! %d %d"), png_status, jpg_status);
+  if(status != 0) {
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unable to read image! %d"), status);
   }
 }
 
-MPY_BIND_STATICMETHOD_ARGS1(load, path_or_bytes_in, {
+MPY_BIND_STATICMETHOD_VAR(1, load, {
     image_obj_t *result = mp_obj_malloc_with_finaliser(image_obj_t, &type_image);
     result->image = nullptr;
-    image_open_helper(*result, path_or_bytes_in);
+    int target_width  = n_args >= 2 ? (int)mp_obj_get_float(args[1]) : 0;
+    int target_height = n_args >= 3 ? (int)mp_obj_get_float(args[2]) : 0;
+    image_open_helper(*result, args[0], target_width, target_height);
     return MP_OBJ_FROM_PTR(result);
   })
 
 MPY_BIND_CLASSMETHOD_ARGS1(load_into, path_or_bytes_in, {
     self(self_in, image_obj_t);
-    image_open_helper(*self, path_or_bytes_in);
+    image_open_helper(*self, path_or_bytes_in, 0, 0);
     return mp_const_none;
   })
 
