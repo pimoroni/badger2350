@@ -81,6 +81,7 @@ def clear_running():
     State.load("menu", state)
     state["running"] = "/system/apps/menu"
     State.modify("menu", state)
+    rtc.clear_alarm()
 
 
 def launch(path):

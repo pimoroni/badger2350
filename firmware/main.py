@@ -12,10 +12,12 @@ app = state["running"]
 if not file_exists(app) or powman.get_wake_reason() == powman.WAKE_RESET:
     app = state["running"] = "/system/apps/menu"
     State.modify("menu", state)
+    rtc.clear_alarm()
 
 launch(app)
 
 state["running"] = "/system/apps/menu"
 State.modify("menu", state)
+rtc.clear_alarm()
 
 reset()
