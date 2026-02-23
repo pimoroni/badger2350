@@ -80,6 +80,7 @@ namespace pimoroni {
   }
 
   void SSD1680::write_luts() {
+    busy_wait();
 
     command(WLR, {
 //    Group:
