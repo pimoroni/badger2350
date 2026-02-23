@@ -24,6 +24,7 @@
 #if defined(STDC) && !defined(Z_SOLO)
 #  if !(defined(_WIN32_WCE) && defined(_MSC_VER))
 #    include <stddef.h>
+#    include <stdint.h>
 #  endif
 #  include <string.h>
 #  include <stdlib.h>
@@ -157,6 +158,10 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
 #ifdef __TOS_OS400__
 #  define OS_CODE 18
+#endif
+
+#if defined( __APPLE__ ) && !(defined(MACOS) || defined(TARGET_OS_MAC))
+#  define OS_CODE 19
 #endif
 
 #if defined(_BEOS_) || defined(RISCOS)
