@@ -11,7 +11,7 @@ from app import Apps
 
 screen.font = rom_font.nope
 
-badge.mode(FAST_UPDATE)
+badge.mode(FAST_UPDATE | NON_BLOCKING)
 
 # find installed apps and create apps
 apps = Apps("/system/apps")

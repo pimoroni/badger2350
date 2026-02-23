@@ -17,6 +17,8 @@ builtins.FULL_UPDATE = 0 << 4
 builtins.MEDIUM_UPDATE = 2 << 4
 builtins.DITHER = 1 << 8
 
+builtins.NON_BLOCKING = 1 << 9
+
 builtins.BUTTON_A = machine.Pin.board.BUTTON_A
 builtins.BUTTON_B = machine.Pin.board.BUTTON_B
 builtins.BUTTON_C = machine.Pin.board.BUTTON_C
@@ -116,6 +118,8 @@ class Badge():
         badge.clear()
         badge.poll()
 
+        # This will effectively cause `display.update()` to block since we
+        # need to wait for the screen to finish before we can update the speed
         if MODEL == "badger" and badge.first_update:
             display.speed((badge.mode() >> 4) & 0xf)
 
@@ -136,6 +140,7 @@ class Badge():
             display.set_vsync(bool(mode & VSYNC))
 
         elif MODEL == "badger":
+            display.blocking(not bool(self._current_mode & NON_BLOCKING))
             display.speed((self._current_mode >> 4) & 0xf)
 
         if MODEL == "tufty" or getattr(builtins, "screen", None) is None:
