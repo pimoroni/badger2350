@@ -16,4 +16,7 @@ if not file_exists(app) or powman.get_wake_reason() == powman.WAKE_RESET:
 
 launch(app)
 
+state["running"] = "/system/apps/menu"
+State.modify("menu", state)
+
 machine.reset()
