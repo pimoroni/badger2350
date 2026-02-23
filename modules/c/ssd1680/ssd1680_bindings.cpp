@@ -45,6 +45,17 @@ mp_obj_t ssd1680___del__(mp_obj_t self_in) {
     return mp_const_none;
 }
 
+mp_obj_t ssd1680_blocking(mp_obj_t self_in, mp_obj_t blocking_in) {
+    (void)self_in;
+    display->set_blocking(mp_obj_is_true(blocking_in));
+    return mp_const_none;
+}
+
+mp_obj_t ssd1680_busy(mp_obj_t self_in) {
+    (void)self_in;
+    return mp_obj_new_bool(display->is_busy());
+}
+
 mp_obj_t ssd1680_update_speed(mp_obj_t self_in, mp_obj_t speed_in) {
     (void)self_in;
     display->set_update_speed(mp_obj_get_int(speed_in));

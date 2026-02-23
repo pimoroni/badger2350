@@ -6,6 +6,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(ssd1680___del___obj, ssd1680___del__);
 static MP_DEFINE_CONST_FUN_OBJ_1(ssd1680_update_obj, ssd1680_update);
 static MP_DEFINE_CONST_FUN_OBJ_3(ssd1680_command_obj, ssd1680_command);
 static MP_DEFINE_CONST_FUN_OBJ_2(ssd1680_update_speed_obj, ssd1680_update_speed);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssd1680_blocking_obj, ssd1680_blocking);
+static MP_DEFINE_CONST_FUN_OBJ_1(ssd1680_busy_obj, ssd1680_busy);
 
 /* Class Methods */
 static const mp_rom_map_elem_t ssd1680_locals[] = {
@@ -13,6 +15,8 @@ static const mp_rom_map_elem_t ssd1680_locals[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&ssd1680_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_command), MP_ROM_PTR(&ssd1680_command_obj) },
     { MP_ROM_QSTR(MP_QSTR_speed), MP_ROM_PTR(&ssd1680_update_speed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_blocking), MP_ROM_PTR(&ssd1680_blocking_obj) },
+    { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&ssd1680_busy_obj) },
     { MP_ROM_QSTR(MP_QSTR_WIDTH), MP_ROM_INT(264) },
     { MP_ROM_QSTR(MP_QSTR_HEIGHT), MP_ROM_INT(176) },
 };

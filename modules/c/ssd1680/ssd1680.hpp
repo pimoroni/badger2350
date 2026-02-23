@@ -8,7 +8,6 @@
 
 #include "common/pimoroni_common.hpp"
 #include "common/pimoroni_bus.hpp"
-#include "libraries/pico_graphics/pico_graphics.hpp"
 
 namespace pimoroni {
 
@@ -19,7 +18,7 @@ namespace pimoroni {
       Y_START_H  = 0x01, // 0x01 = (264 >> 8)
       Y_START_L  = 0x07, // 0x07 = (264 & 0xff) - 1
       Y_END_H    = 0x00,
-      Y_END_L    = 0x00 
+      Y_END_L    = 0x00
     };
 
     //--------------------------------------------------
@@ -66,41 +65,37 @@ namespace pimoroni {
 
       write_luts();
     }
-    
+
     ~SSD1680() {
       // todo: teardown
     }
-
-    void update();
-    uint32_t *get_framebuffer();
 
     //--------------------------------------------------
     // Methods
     //--------------------------------------------------
   public:
+    void update();
+    uint32_t *get_framebuffer();
+
     void busy_wait();
     void reset();
 
     bool is_busy();
-    void power_off();
-    void partial_update(PicoGraphics *graphics, Rect region);
     bool set_update_speed(int update_speed);
-  
-    // SSD1680 Specific
+
     void write_luts();
+    void set_blocking(bool blocking);
 
     void command(uint8_t reg, size_t len, const uint8_t *data);
 
   private:
     void setup();
-  
+
     void read(uint8_t reg, size_t len, uint8_t *data);
     void command(uint8_t reg, std::initializer_list<uint8_t> values);
     void command(uint8_t reg) {command(reg, 0, nullptr);};
     void data(size_t len, const uint8_t *data);
     void data(std::initializer_list<uint8_t> values);
-
-    void off();
   };
 
 }
