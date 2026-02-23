@@ -103,6 +103,9 @@ def update():
             screen.text(account[1]["handle"], 55, socials_y)
             socials_y += 31
 
+    badge.update()
+    wait_for_button_or_alarm(timeout=5000)
+
 
 def on_exit():
     pass
