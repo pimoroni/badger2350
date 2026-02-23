@@ -43,6 +43,10 @@ namespace pimoroni {
     SRYC     = 0x4F,  // set RAM y counter
   };
 
+  void SSD1680::set_blocking(bool blocking) {
+    this->blocking = blocking;
+  }
+
   bool SSD1680::is_busy() {
     if(BUSY == PIN_UNUSED) return false;
     return gpio_get(BUSY);
@@ -111,7 +115,7 @@ namespace pimoroni {
     command(GDVC, {0x17});
     command(SDVC, {0x41, 0xAE, 0x32});
     command(WVCOM, {0x28});
-  
+
     busy_wait();
 
   }
@@ -135,11 +139,7 @@ namespace pimoroni {
     //command(BWCTRL, {0x00});
 
     busy_wait();
-    
-  }
 
-  void SSD1680::power_off() {
-    //command(POF);
   }
 
   void SSD1680::read(uint8_t reg, size_t len, uint8_t *data) {
@@ -179,7 +179,7 @@ namespace pimoroni {
     if(len > 0) {
       gpio_put(DC, 1); // data mode
       spi_write_blocking(spi, (const uint8_t*)data, len);
-      
+
     }
 
     gpio_put(CS, 1);
@@ -202,9 +202,8 @@ namespace pimoroni {
   }
 
   void SSD1680::update() {
-    if(blocking) {
-      busy_wait();
-    }
+    // Wait for any previous update to finish
+    busy_wait();
 
     command(SRXC, {X_START});
     command(SRYC, {Y_START_L, Y_START_H});
@@ -246,13 +245,8 @@ namespace pimoroni {
     command(ADUS);
 
     if(blocking) {
-      off();
+      busy_wait();
     }
 
-  }
-
-  void SSD1680::off() {
-    busy_wait();
-    //command(POF); // turn off
   }
 }

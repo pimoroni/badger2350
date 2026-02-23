@@ -10,3 +10,5 @@ extern mp_obj_t ssd1680_update(mp_obj_t self_in);
 extern mp_int_t ssd1680_get_framebuffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 extern mp_obj_t ssd1680_command(mp_obj_t self_in, mp_obj_t reg_in, mp_obj_t data_in);
 extern mp_obj_t ssd1680_update_speed(mp_obj_t self_in, mp_obj_t speed_in);
+extern mp_obj_t ssd1680_blocking(mp_obj_t self_in, mp_obj_t blocking_in);
+extern mp_obj_t ssd1680_busy(mp_obj_t self_in);
