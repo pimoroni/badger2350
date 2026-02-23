@@ -37,23 +37,24 @@ MPY_BIND_NEW(image, {
 })
 
 void image_open_helper(image_obj_t &target, mp_obj_t path_or_bytes_in) {
-  int status = 0;
+  int png_status = 0;
+  int jpg_status = 0;
   if(mp_obj_is_str(path_or_bytes_in)) {
     const char *path = mp_obj_str_get_str(path_or_bytes_in);
-    status = pngdec_open_file(target, path);
-    if(status != PNG_SUCCESS) {
-      status = jpegdec_open_file(target, path);
+    png_status = pngdec_open_file(target, path);
+    if(png_status != PNG_SUCCESS) {
+      jpg_status = jpegdec_open_file(target, path);
     }
   } else {
     mp_buffer_info_t buf;
     mp_get_buffer_raise(path_or_bytes_in, &buf, MP_BUFFER_READ);
-    status = pngdec_open_ram(target, buf.buf, buf.len);
-    if(status != PNG_SUCCESS) {
-      status = jpegdec_open_ram(target, buf.buf, buf.len);
+    png_status = pngdec_open_ram(target, buf.buf, buf.len);
+    if(png_status != PNG_SUCCESS) {
+      jpg_status = jpegdec_open_ram(target, buf.buf, buf.len);
     }
   }
-  if(status != 0) {
-    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unable to read image! %d"), status);
+  if(png_status != 0 && jpg_status != 0) {
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unable to read image! %d %d"), png_status, jpg_status);
   }
 }
 

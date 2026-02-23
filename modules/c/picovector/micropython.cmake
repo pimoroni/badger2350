@@ -1,7 +1,7 @@
 add_library(usermod_picovector INTERFACE)
 
-include(modules/c/pngdec/pngdec)
-include(modules/c/jpegdec/jpegdec)
+find_package(PNGDEC CONFIG REQUIRED)
+find_package(JPEGDEC CONFIG REQUIRED)
 
 list(APPEND SOURCES
   ${CMAKE_CURRENT_LIST_DIR}/micropython/picovector_bindings.c
@@ -46,7 +46,7 @@ target_include_directories(usermod_picovector INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
-target_link_libraries(usermod INTERFACE usermod_picovector pngdec jpegdec hardware_interp)
+target_link_libraries(usermod INTERFACE usermod_picovector pngdec jpegdec)
 
 set_source_files_properties(
   ${SOURCES}
@@ -54,8 +54,10 @@ set_source_files_properties(
   "-Wno-unused-variable"
 )
 
-set_source_files_properties(
-  ${SOURCES}
-  PROPERTIES COMPILE_OPTIONS
-  "-O2;-fgcse-after-reload;-floop-interchange;-fpeel-loops;-fpredictive-commoning;-fsplit-paths;-ftree-loop-distribute-patterns;-ftree-loop-distribution;-ftree-vectorize;-ftree-partial-pre;-funswitch-loops"
-)
+if(DEFINED PICO_BOARD)
+  set_source_files_properties(
+    ${SOURCES}
+    PROPERTIES COMPILE_OPTIONS
+    "-O2;-fgcse-after-reload;-floop-interchange;-fpeel-loops;-fpredictive-commoning;-fsplit-paths;-ftree-loop-distribute-patterns;-ftree-loop-distribution;-ftree-vectorize;-ftree-partial-pre;-funswitch-loops"
+  )
+endif()

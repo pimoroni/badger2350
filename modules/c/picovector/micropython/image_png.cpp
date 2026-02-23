@@ -25,7 +25,7 @@ extern "C" {
     }
     int status = png->decode((void *)target.image, 0);
     png->close();
-    return status;
+    return png->getLastError();
   }
 
   int pngdec_open_ram(image_obj_t &target, const void* buffer, const size_t size) {

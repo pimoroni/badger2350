@@ -1,7 +1,7 @@
 if (NOT DEFINED PNGDEC_ONCE)
     set (PNGDEC_ONCE TRUE)
 
-    add_library(pngdec
+    list(APPEND SOURCES
       ${CMAKE_CURRENT_LIST_DIR}/PNGdec.cpp
       ${CMAKE_CURRENT_LIST_DIR}/adler32.c
       ${CMAKE_CURRENT_LIST_DIR}/crc32.c
@@ -12,7 +12,11 @@ if (NOT DEFINED PNGDEC_ONCE)
       ${CMAKE_CURRENT_LIST_DIR}/zutil.c
     )
 
-    set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/PNGDEC.cpp PROPERTIES COMPILE_FLAGS "-Wno-error=unused-function")
+    add_library(pngdec
+      ${SOURCES}
+    )
+
+    set_source_files_properties(${SOURCES} PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-non-prototype;-Wno-error=unused-function")
 
     target_include_directories(pngdec INTERFACE ${CMAKE_CURRENT_LIST_DIR})
 

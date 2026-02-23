@@ -13,10 +13,13 @@ list(APPEND CMAKE_MODULE_PATH "${PIMORONI_PICO_PATH}/micropython")
 # All regular modules
 list(APPEND CMAKE_MODULE_PATH "${PIMORONI_PICO_PATH}/micropython/modules")
 
-# Allows us to find downstream /cmodules/
+# Allows us to find downstream /modules/c/*/
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 
-set(CMAKE_C_STANDARD 11)
+set(PNGDEC_DIR "${CMAKE_CURRENT_LIST_DIR}/../modules/c/pngdec")
+set(JPEGDEC_DIR "${CMAKE_CURRENT_LIST_DIR}/../modules/c/jpegdec")
+
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 17)
 
 # Essential
@@ -25,7 +28,11 @@ include(pimoroni_i2c/micropython)
 include(modules/c/ssd1680/micropython)
 include(modules/c/picovector/micropython)
 
+# Build picovector for Pico
 target_compile_definitions(usermod_picovector INTERFACE BADGER=1 PICO=1)
+
+# Build jpegdec for Pico
+target_compile_definitions(jpegdec PRIVATE PICO_BUILD)
 
 include(qrcode/micropython/micropython)
 
