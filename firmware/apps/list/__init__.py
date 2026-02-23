@@ -162,7 +162,7 @@ def center_text(text, y):
 def update():
     global changed
 
-    badge.mode(FAST_UPDATE)
+    badge.mode(FAST_UPDATE | NON_BLOCKING)
     if len(list_items) > 0:
         if badge.pressed(BUTTON_A):
             if state["current_item"] > 0:
@@ -170,7 +170,7 @@ def update():
                 changed = True
         if badge.pressed(BUTTON_B):
             state["checked"][state["current_item"]] = not state["checked"][state["current_item"]]
-            badge.mode(MEDIUM_UPDATE)
+            badge.mode(MEDIUM_UPDATE | NON_BLOCKING)
             changed = True
         if badge.pressed(BUTTON_C):
             if state["current_item"] < len(list_items) - 1:
