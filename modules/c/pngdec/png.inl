@@ -692,9 +692,9 @@ PNG_STATIC int DecodePNG(PNGIMAGE *pPage, void *pUser, int iOptions)
     d_stream.avail_out = 0;
     d_stream.next_out = pPage->pImage;
 
-    while (y < pPage->iHeight) { // continue until fully decoded
-        // parse the markers until the next data block
-    while (!bDone)
+    // continue until fully decoded
+    // parse the markers until the next data block
+    while (!bDone && y < pPage->iHeight)
     {
         iLen = MOTOLONG(&s[iOffset]); // chunk length
         if (iLen < 0 || iLen + (iFileOffset - iBytesRead) > pPage->PNGFile.iSize) // invalid data
@@ -864,8 +864,7 @@ PNG_STATIC int DecodePNG(PNGIMAGE *pPage, void *pUser, int iOptions)
             iFileOffset += iBytesRead;
             iOffset = 0;
         }
-    } // while !bDone
-    } // while y < height
+    } // while !bDone && y < height
     err = inflateEnd(&d_stream);
     return pPage->iError;
 } /* DecodePNG() */
