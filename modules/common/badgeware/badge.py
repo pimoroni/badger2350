@@ -105,6 +105,9 @@ class Badge():
         return True
 
     def update(self):
+        # Perform the dither on the screen raw buffer
+        if badge.mode() & DITHER:
+            screen.dither()
         display.update()
         badge.clear()
         badge.poll()

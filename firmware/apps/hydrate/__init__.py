@@ -5,8 +5,6 @@ import math
 sys.path.insert(0, "/system/apps/hydrate")
 os.chdir("/system/apps/hydrate")
 
-from badgeware import State
-
 CX = screen.width / 2
 CY = screen.height / 2
 
@@ -109,11 +107,6 @@ def draw_menu():
         screen.text("^", CX - 3, screen.height - 18)
 
 
-def init():
-    global state
-    State.load("hydrate", state)
-
-
 def update():
     global state, show_menu, menu_value
 
@@ -155,5 +148,6 @@ def on_exit():
     State.save("hydrate", state)
 
 
-if __name__ == "__main__":
-    run(update, init=init, on_exit=on_exit)
+State.load("hydrate", state)
+
+run(update)

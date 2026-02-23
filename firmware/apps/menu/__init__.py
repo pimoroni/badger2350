@@ -6,7 +6,6 @@ sys.path.insert(0, "/")
 os.chdir("/system/apps/menu")
 
 import ui
-from badgeware import State
 
 from app import Apps
 
@@ -50,11 +49,6 @@ def update():
 
     changed = state["active"] != active
 
-    # If the state hasn't changed ad we're not handling
-    # the initial display refresh, do not refresh the screen
-    if not changed and not badge.first_update:
-        return False
-
     apps.activate(state["active"])
 
     if changed:
@@ -76,7 +70,11 @@ def update():
     # draw label for active menu icon
     apps.draw_label()
 
+    # If the state hasn't changed ad we're not handling
+    # the initial display refresh, do not refresh the screen
+    loop.skip_update = not (changed or badge.first_update)
+
     return None
 
-if __name__ == "__main__":
-    run(update)
+
+run(update)

@@ -1,8 +1,6 @@
 import os
 import sys
 
-from badgeware import State, run
-
 sys.path.insert(0, "/system/apps/list")
 os.chdir("/system/apps/list")
 
@@ -253,9 +251,4 @@ def update():
         screen.text(empty_text, ((LIST_PADDING + LIST_WIDTH) - text_length) // 2, (LIST_HEIGHT // 2) + LIST_START - (ITEM_SPACING // 4))
 
 
-def on_exit():
-    pass
-
-
-if __name__ == "__main__":
-    run(update)
+run(update)

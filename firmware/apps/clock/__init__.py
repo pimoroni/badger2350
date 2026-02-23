@@ -5,7 +5,6 @@ sys.path.insert(0, "/system/apps/clock")
 sys.path.insert(0, "/")
 os.chdir("/system/apps/clock")
 
-from badgeware import State
 import time
 import ntptime
 from daylightsaving import DaylightSavingPolicy, DaylightSaving
@@ -655,14 +654,8 @@ def update():
     display_time()
 
 
-def init():
-    pass
-
-
 def on_exit():
     rtc.clear_alarm()
 
 
-# Standalone support for Thonny debugging
-if __name__ == "__main__":
-    run(update, init=init, on_exit=on_exit)
+run(update)

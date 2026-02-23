@@ -47,10 +47,6 @@ def center_text(text, y):
     screen.text(text, (screen.width / 2) - (w / 2), y)
 
 
-def init():
-    pass
-
-
 def update():
     global rear_view, background, pattern
 
@@ -112,5 +108,4 @@ def on_exit():
     pass
 
 
-if __name__ == "__main__":
-    run(update)
+run(update)

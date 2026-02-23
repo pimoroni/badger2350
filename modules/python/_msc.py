@@ -1,5 +1,4 @@
 import rp2
-from badgeware import run
 from machine import Timer
 
 import binascii

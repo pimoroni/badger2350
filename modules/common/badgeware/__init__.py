@@ -26,103 +26,131 @@ def reset():
     machine.reset()
 
 
-def run(update, init=None, on_exit=None):
+class _run:
+    @property
+    def ticks(self):
+        return badge.ticks - self.start
+
+    @property
+    def progress(self):
+        return 0 if self.duration is None else self.ticks / self.duration
+
+    def __init__(self, *args, duration=None):
+        self.start = 0
+        self.result = None
+        self.duration = duration
+        self.skip_update = False
+        if len(args) == 1 and callable(args[0]):
+            self(args[0])
+
+    def __call__(self, update):
+        badge.poll()
+        self.start = badge.ticks
+        parent = loop
+        builtins.loop = self
+
+        try:
+            while True:
+                if not self.skip_update:
+                    badge.clear()
+
+                self.skip_update = False
+
+                if (result := update()) is not None:
+                    self.result = result
+                    return
+
+                if not self.skip_update:
+                    if badge.first_update:
+                        display.speed(0)
+
+                    # Perform the dither on the screen raw buffer
+                    if badge.mode() & DITHER:
+                        screen.dither()
+
+                    display.update()
+
+                    if badge.first_update:
+                        display.speed((badge.mode() >> 4) & 0xf)
+                        badge.first_update = False
+
+                if self.duration is None:
+                    wait_for_button_or_alarm()
+
+                if self.duration is not None and self.ticks >= self.duration:
+                    return
+
+        finally:
+            badge.clear()
+            builtins.loop = parent
+
+
+def wait_for_button_or_alarm(timeout=SLEEP_TIMEOUT_MS):
+    # Wait for input or sleep
+    t_start = time.ticks_ms()
+    while True:
+        badge.poll()
+        if badge.pressed():
+            break
+        if rtc.alarm_status():
+            rtc.clear_alarm()
+            break
+        # put the unit to sleep if button input times out and the unit is not connected via USB
+        if time.ticks_diff(time.ticks_ms(), t_start) > timeout and not badge.usb_connected():
+            badge.sleep()
+
+
+def clear_running():
     state = {
         "active": 0,
         "running": "/system/apps/menu"
     }
     State.load("menu", state)
+    state["running"] = "/system/apps/menu"
+    State.modify("menu", state)
+
+
+def launch(path):
+    app = None
+    badge.first_update = True
+
+    def do_exit():
+        on_exit = getattr(app, "on_exit", None)
+        return on_exit() if callable(on_exit) else on_exit
+
+    def quit_to_launcher(_pin):
+        do_exit()
+        clear_running()
+        reset()
+
+    machine.Pin.board.BUTTON_HOME.irq(
+        trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher
+    )
+
+    # Grab a list of modules from before launching app
+    modules_before_launch = list(sys.modules.keys())
 
     try:
-        screen.font = DEFAULT_FONT
+        os.chdir(path)
+        sys.path.insert(0, path)
+        app = __import__(path)  # App may block here
 
-        if isinstance(update, str):
-            path = update
-            os.chdir(path)
-            sys.path.insert(0, path)
-            app = __import__(path)
-            update = app.update
-            init = getattr(app, "init", None)
-            on_exit = getattr(app, "on_exit", None)
-
-        def do_exit():
-            if on_exit:
-                on_exit()
-
-        def quit_to_launcher(_pin):
-            do_exit()
-
-            # Clear the currently running app from the menu's state
-            state["running"] = "/system/apps/menu"
-            State.modify("menu", state)
-
-            reset()
-
-        machine.Pin.board.BUTTON_HOME.irq(
-            trigger=machine.Pin.IRQ_FALLING, handler=quit_to_launcher
-        )
-
-        if badge.default_clear is None:
-            screen.pen = color.white
-            screen.clear()
-
-        badge.first_update = True
-
-        if init:
-            init()
-            gc.collect()
-
-        # Load the startup inputs
-        badge.poll()
-
-        while True:
-            if badge.default_clear is not None:
-                screen.pen = badge.default_clear
-                screen.clear()
-            screen.pen = badge.default_pen
-
-            update_display = True
-            result = update()
-
-            if result in (True, False, None):
-                update_display = result in (True, None)
-            else:
-                return result
-
-            gc.collect()
-
-            # Perform the dither on the screen raw buffer
-            if badge.mode() & DITHER:
-                screen.dither()
-
-            if update_display:
-                if badge.first_update:
-                    display.speed(0)
-
-                display.update()
-
-                if badge.first_update:
-                    display.speed((badge.mode() >> 4) & 0xf)
-                    badge.first_update = False
-
-            # Wait for input or sleep
-            t_start = time.ticks_ms()
-            while True:
-                badge.poll()
-                if badge.pressed():
-                    break
-                if rtc.alarm_status():
-                    rtc.clear_alarm()
-                    break
-                # put the unit to sleep if button input times out and the unit is not connected via USB
-                if time.ticks_diff(time.ticks_ms(), t_start) > SLEEP_TIMEOUT_MS and not badge.usb_connected():
-                    badge.sleep()
+        return do_exit()
 
     except Exception as e:  # noqa: BLE001
         fatal_error("Error!", get_exception(e))
 
     finally:
-        do_exit()
+        # Clean up path
+        if sys.path[0].startswith("/system/apps"):
+            sys.path.pop(0)
+
+        # Clean up any imported modules
+        for key in sys.modules.keys():
+            if key not in modules_before_launch:
+                del sys.modules[key]
+
+        gc.collect()
 
 
 def get_exception(e):
@@ -229,7 +257,11 @@ builtins.X4 = image.X4
 
 # Hoist display and run for clean Thonny apps
 builtins.display = display
-builtins.run = run
+builtins.run = _run
+builtins.launch = launch
+builtins.loop = None
+builtins.reset = reset
+builtins.wait_for_button_or_alarm = wait_for_button_or_alarm
 builtins.fatal_error = fatal_error
 
 # Import badgeware modules

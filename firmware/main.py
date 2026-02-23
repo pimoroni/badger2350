@@ -1,4 +1,5 @@
 import machine
+import powman
 
 state = {
     "active": 0,
@@ -8,12 +9,11 @@ State.load("menu", state)
 
 app = state["running"]
 
-# Trying to launch an app that has been removed
-if not file_exists(app):
-    state["running"] = "/system/apps/menu"
+# Trying to launch an app that has been removed, or "reset" has been pressed
+if not file_exists(app) or powman.get_wake_reason() == powman.WAKE_RESET:
+    app = state["running"] = "/system/apps/menu"
     State.modify("menu", state)
-    app = state["running"]
 
-run(app)
+launch(app)
 
 machine.reset()

@@ -7,7 +7,6 @@ import sys
 
 import urequests
 import wifi
-from badgeware import run
 
 secrets.require("LAT", "LON")
 
@@ -174,5 +173,4 @@ def on_exit():
     rtc.clear_alarm()
 
 
-if __name__ == "__main__":
-    run(update)
+run(update)

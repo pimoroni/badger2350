@@ -21,7 +21,10 @@ builtins = [
 
 # badgeware.py
     "display",
+    "launch",
     "run",
+    "loop",
+    "reset",
     "fatal_error",
 
 # math.py

@@ -3,7 +3,6 @@ import os
 import random
 import sys
 
-from badgeware import State
 
 sys.path.insert(0, "/system/apps/the_compendium")
 os.chdir("/system/apps/the_compendium")
@@ -347,5 +346,4 @@ def update():
         State.save("the_compendium", state)
 
 
-if __name__ == "__main__":
-    run(update)
+run(update)
