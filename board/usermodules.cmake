@@ -47,6 +47,7 @@ include(adcfft/micropython)
 
 # Sleep / Wake Reason
 include(modules/c/powman/micropython)
+target_compile_definitions(usermod_sleep INTERFACE BADGER=1)
 
 # C++ Magic Memory
 include(cppmem/micropython)
