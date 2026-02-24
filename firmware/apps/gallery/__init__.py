@@ -12,11 +12,8 @@ files = []
 total_files = len(os.listdir("/system/apps/gallery/images"))
 
 # we don't want to continue if there are no images to show!
-# we'll display an error and wait for the user to go back to the menu or enter disk mode
 if total_files == 0:
-    ui.draw_alert("No image files found.")
-    while True:
-        pass
+    fatal_error("File Error", "There are no PNG files in the folder /apps/gallery/images")
 
 bar_width = screen.width - 20
 bar_x = (screen.width // 2) - (bar_width // 2)
