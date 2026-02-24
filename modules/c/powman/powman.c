@@ -129,14 +129,22 @@ void powman_init() {
         gpio_set_dir(i, GPIO_IN);
         gpio_set_input_enabled(i, false);
         switch (i) {
-            case 8:
+            case BW_PSRAM_CS:  // Pull up
                 gpio_set_pulls(i, true, false);
                 break;
             case BW_RESET_SW:
             case BW_SWITCH_HOME:
-            case 26:
             case BW_SW_POWER_EN:
-            case 28: // Floating
+#ifdef TUFTY
+#pragma message "powman: building for Tufty."
+            case 40:
+            case 42:
+#else
+#pragma message "powman: building for Blinky/Badger."
+            case 26:
+            case 28:
+#endif
+                // Floating
                 gpio_disable_pulls(i);
                 break;
             case BW_SWITCH_A:
