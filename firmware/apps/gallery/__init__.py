@@ -79,7 +79,7 @@ def draw_thumbnails():
     screen.rectangle(0, screen.height - 59, screen.width, 52)
     screen.pen = color.black
     screen.shape(shape.rectangle(-1, screen.height - 59, screen.width + 2, 52).stroke(1))
-    
+
     # render the thumbnails
     for i in range(-3, 4):
         offset = state["index"] - int(state["index"])
