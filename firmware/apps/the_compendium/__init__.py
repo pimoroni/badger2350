@@ -12,6 +12,7 @@ import level
 import monster
 import raycaster
 import ui
+import qwstpad
 
 badge.mode(FAST_UPDATE)
 
@@ -23,6 +24,7 @@ game_state = 0
 
 title = image.load("assets/title.png")
 game_over = image.load("assets/game_over.png")
+ui_tex = SpriteSheet("assets/ui.png", 12, 1)
 
 background = None
 tilemap = None
@@ -35,6 +37,8 @@ render_queue = []
 Y_SCALE = 0.7
 previous_screen = 0
 current_level = None
+gamepad = None
+controls={}
 
 # Setting up default values for the first run, and loading in the state with the
 # user choices if the file's there.
@@ -120,6 +124,57 @@ def init_raycast():
     rays = temp_rays
 
 
+def init_gamepad():
+    global gamepad
+    gamepads = qwstpad.Gamepadhelper()
+    for i in gamepads.pads:
+        if i is not None:
+            gamepad = i
+            return i
+    return None
+
+
+def parse_controls():
+    global controls, gamepad, ui_tex
+
+    if not gamepad:
+        gamepad = init_gamepad()
+
+    if gamepad:
+        try:
+            gamepad.update_buttons()
+        except OSError:
+            gamepad = init_gamepad()
+
+    if gamepad:
+        controls["LEFT"] = gamepad.pressed("L")
+        controls["RIGHT"] = gamepad.pressed("R")
+        controls["WALK"] = gamepad.pressed("U")
+        controls["EXAMINE"] = gamepad.pressed("X")
+        controls["INTERACT"] = gamepad.pressed("B")
+        controls["INVENTORY"] = gamepad.pressed("Y")
+        controls["ANY"] = gamepad.pressed()
+        controls["DIALOG1"] = gamepad.pressed("A")
+        controls["DIALOG2"] = gamepad.pressed("B")
+        controls["DIALOG3"] = gamepad.pressed("X")
+        controls["DIALOG4"] = gamepad.pressed("Y")
+        controls["DIALOG5"] = gamepad.pressed("+")
+        ui_tex = SpriteSheet("assets/ui.png", 12, 1)
+    else:
+        controls["LEFT"] = badge.pressed(BUTTON_A)
+        controls["RIGHT"] = badge.pressed(BUTTON_C)
+        controls["WALK"] = badge.pressed(BUTTON_B)
+        controls["EXAMINE"] = badge.pressed(BUTTON_B)
+        controls["INTERACT"] = badge.pressed(BUTTON_UP)
+        controls["INVENTORY"] = badge.pressed(BUTTON_UP)
+        controls["ANY"] = badge.pressed()
+        controls["DIALOG1"] = badge.pressed(BUTTON_A)
+        controls["DIALOG2"] = badge.pressed(BUTTON_B)
+        controls["DIALOG3"] = badge.pressed(BUTTON_C)
+        controls["DIALOG4"] = badge.pressed(BUTTON_DOWN)
+        controls["DIALOG5"] = badge.pressed(BUTTON_UP)
+
+
 # Takes the rays defined above and generates a series of vectors for their directions,\# rotated by the player's angle.
 def update_player_rays():
     ray_vectors.clear()
@@ -172,25 +227,37 @@ def player_move():
     global y_factor
 
     if previous_screen is None:
-        if badge.pressed(BUTTON_A):
+        if controls["LEFT"]:
             player.turn(1)
             return None
-        if badge.pressed(BUTTON_C):
+        if controls["RIGHT"]:
             player.turn(-1)
             return None
-        if badge.pressed(BUTTON_B):
-            player.check_movement(monsters)
-            if player.can_walk(monsters):
-                player.walk()
-                return None
-            lookat_item = player.get_lookat_item(current_level, monsters)
-            if lookat_item is None:
-                return None
-            return lookat_item.examine()
-        if badge.pressed(BUTTON_DOWN):
+        if gamepad:
+            if controls["WALK"]:
+                player.check_movement(monsters)
+                if player.can_walk(monsters):
+                    player.walk()
+                    return None
+            if controls["EXAMINE"]:
+                lookat_item = player.get_lookat_item(current_level, monsters)
+                if lookat_item is None:
+                    return None
+                return lookat_item.examine()
+        else:
+            if controls["WALK"]:
+                player.check_movement(monsters)
+                if player.can_walk(monsters):
+                    player.walk()
+                    return None
+                lookat_item = player.get_lookat_item(current_level, monsters)
+                if lookat_item is None:
+                    return None
+                return lookat_item.examine()
+        if controls["INTERACT"]:
             lookat_item = player.get_lookat_item(current_level, monsters)
             return lookat_item.interact()
-        if badge.pressed(BUTTON_UP):
+        if controls["INVENTORY"]:
             return cutscene.InventoryScreen(player)
     return None
 
@@ -204,7 +271,7 @@ def draw_3d():
 
 # Self explanatory, drawing the UI
 def draw_ui():
-    ui.draw_buttons(current_level, player, monsters)
+    ui.draw_buttons(current_level, player, monsters, gamepad)
     ui.draw_infobar(current_level, player, monsters)
     ui.draw_map(current_level, player, monsters)
 
@@ -229,10 +296,12 @@ def save_state():
 def update():
     global previous_screen, state, game_state
 
+    parse_controls()
+
     # If we're on the title screen, just display it.
     if game_state == 0:
         screen.blit(title, vec2(0, 0))
-        if badge.pressed():
+        if controls["ANY"]:
             game_state = 1
             state["game_state"] = 1
             save_state()
@@ -244,15 +313,15 @@ def update():
 
         # If the last screen was dialogue, find out what was chosen
         if isinstance(previous_screen, dialogue.DialogueNode):
-            if badge.pressed(BUTTON_A):
+            if controls["DIALOG1"]:
                 previous_screen = previous_screen.choose(0)
-            elif badge.pressed(BUTTON_B):
+            elif controls["DIALOG2"]:
                 previous_screen = previous_screen.choose(1)
-            elif badge.pressed(BUTTON_C):
+            elif controls["DIALOG3"]:
                 previous_screen = previous_screen.choose(2)
-            elif badge.pressed(BUTTON_DOWN):
+            elif controls["DIALOG4"]:
                 previous_screen = previous_screen.choose(3)
-            elif badge.pressed(BUTTON_UP):
+            elif controls["DIALOG5"]:
                 previous_screen = previous_screen.choose(4)
 
         # If we're in the inventory, the only thing to do is come out of the inventory.
@@ -275,7 +344,7 @@ def update():
             if len(previous_screen.removed_item) > 0:
                 player.rem_inventory(previous_screen.removed_item)
             draw_3d()
-            previous_screen.draw(player, standard_font)
+            previous_screen.draw(player, standard_font, ui_tex)
             if msg:
                 msg.draw()
 

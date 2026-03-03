@@ -32,7 +32,7 @@ class ActionNode:
             return dialogue_library[chosen_option]
         return self
 
-    def draw(self, player, font):
+    def draw(self, player, font, ui_tex):
         self.get_viable_children(player)
         children = []
         for node in self.viable_child_nodes:
@@ -42,7 +42,7 @@ class ActionNode:
                 node_data = dialogue_library[node]
                 children.append(node_data.menutext)
         dialog = cutscene.DialogBox(self.image, self.text, cutscene.CutsceneLayout.img_left, font, children)
-        dialog.draw(ui.ui_tex)
+        dialog.draw(ui_tex)
 
     def __str__(self):
         return self.menutext
