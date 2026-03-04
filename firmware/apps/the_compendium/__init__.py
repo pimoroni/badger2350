@@ -430,7 +430,7 @@ def update():
             badge.sleep()
 
     if not gamepad:
-        wait_for_button_or_alarm(timeout=60)
+        wait_for_button_or_alarm(timeout=60000)
 
 
 run(update)
