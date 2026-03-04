@@ -85,18 +85,34 @@ def draw_map(current_level, player, monsters):
     screen.shape(arrow)
 
 
-def draw_buttons(current_level, player, monsters):
-    screen.blit(ui_tex.sprite(5, 0), vec2(41, 158))  # A button is always turn
-    screen.blit(ui_tex.sprite(6, 0), vec2(206, 158))  # C button is always turn
-    screen.blit(ui_tex.sprite(8, 0), vec2(246, 41))  # Up button is always inventory
+def draw_buttons(current_level, player, monsters, gamepad):
+    if gamepad:
+        screen.blit(ui_tex.sprite(5, 0), vec2(0, 144))  # A button is always turn
+        screen.blit(ui_tex.sprite(6, 0), vec2(32, 144))  # C button is always turn
+        screen.blit(ui_tex.sprite(8, 0), vec2(216, 144))  # Up button is always inventory
 
-    if player.can_walk(monsters):
-        screen.blit(ui_tex.sprite(7, 0), vec2(124, 158))  # B button only appears if player can move forward
+        if player.can_walk(monsters):
+            screen.blit(ui_tex.sprite(7, 0), vec2(16, 128))  # B button only appears if player can move forward
+        else:
+            screen.blit(ui_tex.sprite(9, 0), vec2(232, 128))  # Otherwise, magnifying glass
+
+        lookat_item = player.get_lookat_item(current_level, monsters)
+        if lookat_item.interaction_class == 1:
+            screen.blit(ui_tex.sprite(10, 0), vec2(248, 144))
+        elif lookat_item.interaction_class == 4:
+            screen.blit(ui_tex.sprite(11, 0), vec2(248, 144))
     else:
-        screen.blit(ui_tex.sprite(9, 0), vec2(124, 158))  # Otherwise, magnifying glass
+        screen.blit(ui_tex.sprite(5, 0), vec2(41, 158))  # A button is always turn
+        screen.blit(ui_tex.sprite(6, 0), vec2(206, 158))  # C button is always turn
+        screen.blit(ui_tex.sprite(8, 0), vec2(246, 41))  # Up button is always inventory
 
-    lookat_item = player.get_lookat_item(current_level, monsters)
-    if lookat_item.interaction_class == 1:
-        screen.blit(ui_tex.sprite(10, 0), vec2(246, 124))
-    elif lookat_item.interaction_class == 4:
-        screen.blit(ui_tex.sprite(11, 0), vec2(246, 124))
+        if player.can_walk(monsters):
+            screen.blit(ui_tex.sprite(7, 0), vec2(124, 158))  # B button only appears if player can move forward
+        else:
+            screen.blit(ui_tex.sprite(9, 0), vec2(124, 158))  # Otherwise, magnifying glass
+
+        lookat_item = player.get_lookat_item(current_level, monsters)
+        if lookat_item.interaction_class == 1:
+            screen.blit(ui_tex.sprite(10, 0), vec2(246, 124))
+        elif lookat_item.interaction_class == 4:
+            screen.blit(ui_tex.sprite(11, 0), vec2(246, 124))
