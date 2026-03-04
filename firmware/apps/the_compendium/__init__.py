@@ -2,6 +2,7 @@ import math
 import os
 import random
 import sys
+import time
 
 
 sys.path.insert(0, "/system/apps/the_compendium")
@@ -24,7 +25,9 @@ game_state = 0
 
 title = image.load("assets/title.png")
 game_over = image.load("assets/game_over.png")
-ui_tex = SpriteSheet("assets/ui.png", 12, 1)
+ui_tex_unit = SpriteSheet("assets/ui.png", 12, 1)
+ui_tex_pad = SpriteSheet("assets/ui_pad.png", 12, 1)
+ui_tex = ui_tex_unit
 
 background = None
 tilemap = None
@@ -147,25 +150,25 @@ def parse_controls():
             gamepad = init_gamepad()
 
     if gamepad:
-        controls["LEFT"] = gamepad.pressed("L")
-        controls["RIGHT"] = gamepad.pressed("R")
-        controls["WALK"] = gamepad.pressed("U")
-        controls["EXAMINE"] = gamepad.pressed("X")
-        controls["INTERACT"] = gamepad.pressed("B")
-        controls["INVENTORY"] = gamepad.pressed("Y")
-        controls["ANY"] = gamepad.pressed()
-        controls["DIALOG1"] = gamepad.pressed("A")
-        controls["DIALOG2"] = gamepad.pressed("B")
-        controls["DIALOG3"] = gamepad.pressed("X")
-        controls["DIALOG4"] = gamepad.pressed("Y")
-        controls["DIALOG5"] = gamepad.pressed("+")
-        ui_tex = SpriteSheet("assets/ui.png", 12, 1)
+        controls["LEFT"] = gamepad.held("L")
+        controls["RIGHT"] = gamepad.held("R")
+        controls["WALK"] = gamepad.held("U")
+        controls["EXAMINE"] = gamepad.held("X")
+        controls["INTERACT"] = gamepad.held("A")
+        controls["INVENTORY"] = gamepad.held("Y")
+        controls["ANY"] = gamepad.held()
+        controls["DIALOG1"] = gamepad.held("A")
+        controls["DIALOG2"] = gamepad.held("B")
+        controls["DIALOG3"] = gamepad.held("X")
+        controls["DIALOG4"] = gamepad.held("Y")
+        controls["DIALOG5"] = gamepad.held("+")
+        ui_tex = ui_tex_pad
     else:
         controls["LEFT"] = badge.pressed(BUTTON_A)
         controls["RIGHT"] = badge.pressed(BUTTON_C)
         controls["WALK"] = badge.pressed(BUTTON_B)
         controls["EXAMINE"] = badge.pressed(BUTTON_B)
-        controls["INTERACT"] = badge.pressed(BUTTON_UP)
+        controls["INTERACT"] = badge.pressed(BUTTON_DOWN)
         controls["INVENTORY"] = badge.pressed(BUTTON_UP)
         controls["ANY"] = badge.pressed()
         controls["DIALOG1"] = badge.pressed(BUTTON_A)
@@ -173,6 +176,7 @@ def parse_controls():
         controls["DIALOG3"] = badge.pressed(BUTTON_C)
         controls["DIALOG4"] = badge.pressed(BUTTON_DOWN)
         controls["DIALOG5"] = badge.pressed(BUTTON_UP)
+        ui_tex = ui_tex_unit
 
 
 # Takes the rays defined above and generates a series of vectors for their directions,\# rotated by the player's angle.
@@ -292,6 +296,7 @@ def save_state():
 
     State.save("the_compendium", state)
 
+init_gamepad()
 
 def update():
     global previous_screen, state, game_state
@@ -417,9 +422,15 @@ def update():
     # Update the screen
     badge.update()
 
-    # Wait for a button press or alarm interrupt before continuing,
-    # Sleep after one minute if power is not connected.
-    wait_for_button_or_alarm(timeout=60_000)
+    timer = time.ticks_ms()
+
+    while gamepad and not gamepad.pressed():
+        parse_controls()
+        if time.ticks_ms() - timer >= 60000:
+            badge.sleep()
+
+    if not gamepad:
+        wait_for_button_or_alarm(timeout=60)
 
 
 run(update)

@@ -1,5 +1,4 @@
 import cutscene
-import ui
 
 
 # The node type they all come from, contains data about whether the node should appear in menus, give the player items and so forth.
@@ -101,7 +100,7 @@ dialogue_library = {
     "mk_ninja": DialogueNode("mk_ninja", "Eeh, search me. Guy's like a sponge for stupid ideas, probably heard somewhere it's cool. S'definitely cooler than when he opens his mouth.", mk_portrait, ["nj_meet"], ["mk_hub"], "Why doesn't the ninja talk?", [], []),
     "mk_accusation": DialogueNode("mk_accusation", "Oh, that little - I swear, if I didn't have to clean it up I'd be in there right now flinging- never mind. I didn't take his damn scroll. The robot did. Needed it to patch a leak or something.", mk_portrait, ["unlock_mk_accusation"], ["mk_hub"], "D'you have the ninja's wall scroll?", ["note_robotpatch"], ["unlock_mk_accusation"]),
     "mk_present_comic": DialogueNode("mk_present_comic", "Nice work, kid. A classic of modern literature is safe once again.", mk_portrait, ["comic_book"], ["mk_present2"], "Here you go, one comic, slightly foxed.", [], ["comic_book"]),
-    "mk_present2": DialogueNode("mk_present2", "You'll probably wanna get home, right? Yeah, old Solderbeard can help ya. Probably his experiments brought you here in the first place. Take this, he'll probably need it.", mk_portrait, [], ["mk_hub"], "No worries.", ["battery", "banana"], []),
+    "mk_present2": DialogueNode("mk_present2", "You'll probably wanna get home, right? Yeah, old Solderbeard can help ya. Probably his experiments brought you here in the first place. Take this battery, he'll probably need it. Oh, and this.", mk_portrait, [], ["mk_hub"], "No worries.", ["battery", "banana"], []),
     "mk_banana": DialogueNode("mk_banana", "Banana AND a battery, don't forget. Yeah, I'm a monkey, it's kinda contractual. Besides, good for potassium.", mk_portrait, ["banana"], ["mk_hub"], "Why a banana?", [], []),
     "rb_greeting": DialogueNode("rb_greeting", "Greetings, human! Welcome to Spaceport Zeta, your gateway to the cosmos! I'm Lizzie, your customer service pal!", rb_portrait, [], ["rb_whoyou", "rb_whatplace", "rb_ninja", "rb_comic", "rb_scroll", "rb_swap", None], "", [], []),
     "rb_hub": DialogueNode("rb_hub", "How can I make your day even better today?", rb_portrait, [], ["rb_whoyou", "rb_whatplace", "rb_ninja", "rb_comic", "rb_scroll", "rb_swap", None], "[Continue]", [], []),
