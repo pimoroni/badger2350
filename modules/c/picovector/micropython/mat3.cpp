@@ -29,10 +29,9 @@ extern "C" {
     return MP_OBJ_FROM_PTR(result);
   })
 
-  MPY_BIND_VAR(3, translate, {
+  MPY_BIND_VAR(2, translate, {
     mat3_obj_t *self = (mat3_obj_t *)MP_OBJ_TO_PTR(args[0]);
-    float x = mp_obj_get_float(args[1]);
-    float y = mp_obj_get_float(args[2]);
+    MPY_GET_XY_OR_VEC2(1, x, y)
     mat3_obj_t *result = mp_obj_malloc(mat3_obj_t, &type_mat3);
     result->m = self->m.translate(x, y);
     return MP_OBJ_FROM_PTR(result);
@@ -42,7 +41,7 @@ extern "C" {
     mat3_obj_t *self = (mat3_obj_t *)MP_OBJ_TO_PTR(args[0]);
     float x = mp_obj_get_float(args[1]);
     float y = x;
-    if(n_args > 2) {
+    if(n_args >= 3) {
       y = mp_obj_get_float(args[2]);
     }
     mat3_obj_t *result = mp_obj_malloc(mat3_obj_t, &type_mat3);

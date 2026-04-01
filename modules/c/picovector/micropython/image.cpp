@@ -239,27 +239,17 @@ MPY_BIND_VAR(1, monochrome, {
 // would we undo the multiply and return rgba?
 MPY_BIND_VAR(2, get, {
     const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
-    vec2_t point;
-    if(mp_obj_is_vec2(args[1])) {
-      point = mp_obj_get_vec2(args[1]);
-    } else {
-      point = mp_obj_get_vec2_from_xy(&args[1]);
-    }
+    MPY_GET_XY_OR_VEC2(1, x, y)
     color_obj_t *color = mp_obj_malloc(color_obj_t, &type_color);
-    uint32_t c = self->image->get(point.x, point.y);
+    uint32_t c = self->image->get(x, y);
     color->c = new rgb_color_t(_r(c), _g(c), _b(c), _a(c));
     return MP_OBJ_FROM_PTR(color);
   })
 
 MPY_BIND_VAR(2, put, {
     const image_obj_t *self = (image_obj_t *)MP_OBJ_TO_PTR(args[0]);
-    vec2_t point;
-    if(mp_obj_is_vec2(args[1])) {
-      point = mp_obj_get_vec2(args[1]);
-    } else {
-      point = mp_obj_get_vec2_from_xy(&args[1]);
-    }
-    self->image->put(point.x, point.y);
+    MPY_GET_XY_OR_VEC2(1, x, y)
+    self->image->put(x, y);
     return mp_const_none;
   })
 
@@ -271,24 +261,15 @@ MPY_BIND_VAR(3, text, {
       mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("target image has no font"));
     }
 
-    vec2_t point;
-    unsigned arg_offset;
-
-    if(mp_obj_is_vec2(args[2])) {
-      point = mp_obj_get_vec2(args[2]);
-      arg_offset = 3;
-    } else {
-      point = mp_obj_get_vec2_from_xy(&args[2]);
-      arg_offset = 4;
-    }
+    MPY_GET_XY_OR_VEC2(2, x, y)
 
     if(self->font) {
-      float size = n_args >= (arg_offset + 1) ? mp_obj_get_float(args[arg_offset]) : 12;
-      self->image->font()->draw(self->image, text, point.x, point.y, size);
+      float size = n_args >= 3 ? mp_obj_get_float(args[2]) : 12;
+      self->image->font()->draw(self->image, text, x, y, size);
     }
 
     if(self->pixel_font) {
-      self->image->pixel_font()->draw(self->image, text, point.x, point.y);
+      self->image->pixel_font()->draw(self->image, text, x, y);
     }
 
     return mp_const_none;
