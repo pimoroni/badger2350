@@ -41,90 +41,87 @@ extern "C" {
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(4, regular_polygon, {
-    float x = mp_obj_get_float(args[0]);
-    float y = mp_obj_get_float(args[1]);
-    float r = mp_obj_get_float(args[2]);
-    int s = mp_obj_get_float(args[3]);
+  MPY_BIND_STATICMETHOD_VAR(3, regular_polygon, {
+    MPY_GET_XY_OR_VEC2(0, x, y)
+    float r = mp_obj_get_float(args[0]);
+    int s = mp_obj_get_float(args[1]);
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
     shape->shape = regular_polygon(x, y, s, r);
     return MP_OBJ_FROM_PTR(shape);
   })
 
   MPY_BIND_STATICMETHOD_VAR(2, circle, {
-    float x;
-    float y;
-    float r;
-
-    if(n_args == 3) {
-      x = mp_obj_get_float(args[0]);
-      y = mp_obj_get_float(args[1]);
-      r = mp_obj_get_float(args[2]);
-    } else if (n_args == 2 && mp_obj_is_type(args[0], &type_vec2)) {
-      const vec2_obj_t *point = (vec2_obj_t *)MP_OBJ_TO_PTR(args[0]);
-      x = point->v.x;
-      y = point->v.y;
-      r = mp_obj_get_float(args[1]);
-    } else {
-      mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either circle(p, r) or circle(x, y, r)"));
-    }
-
+    MPY_GET_XY_OR_VEC2(0, x, y)
+    float r = mp_obj_get_float(args[0]);
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
     shape->shape = circle(x, y, r);
     return MP_OBJ_FROM_PTR(shape);
-  })
+})
 
   MPY_BIND_STATICMETHOD_VAR(1, rectangle, {
+    if(n_args == 4) {
+      float x = mp_obj_get_float(args[0]);
+      float y = mp_obj_get_float(args[1]);
+      float w = mp_obj_get_float(args[2]);
+      float h = mp_obj_get_float(args[3]);
+      shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
+      shape->shape = rectangle(x, y, w, h);
+      return MP_OBJ_FROM_PTR(shape);
+    }
+
+    if (n_args == 1 && mp_obj_is_type(args[0], &type_rect)) {
+      const rect_t rect = mp_obj_get_rect(args[0]);
+      shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
+      shape->shape = rectangle(rect.x, rect.y, rect.w, rect.h);
+      return MP_OBJ_FROM_PTR(shape);
+    }
+
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either rectangle(rect) or rectangle(x, y, w, h)"));
+  })
+
+  MPY_BIND_STATICMETHOD_VAR(2, rounded_rectangle, {
     float x;
     float y;
     float w;
     float h;
+    unsigned arg_offset;
 
-    if(n_args == 4) {
+    if(mp_obj_is_type(args[0], &type_rect)) {
+      const rect_t rect = mp_obj_get_rect(args[0]);
+      x = rect.x;
+      y = rect.y;
+      w = rect.w;
+      h = rect.h;
+      n_args -= 1;
+      args += 1;
+    } else {
       x = mp_obj_get_float(args[0]);
       y = mp_obj_get_float(args[1]);
       w = mp_obj_get_float(args[2]);
       h = mp_obj_get_float(args[3]);
-    } else if (n_args == 1 && mp_obj_is_type(args[0], &type_rect)) {
-      const rect_t *rect = (rect_t *)MP_OBJ_TO_PTR(args[0]);
-      x = rect->x;
-      y = rect->y;
-      w = rect->w;
-      h = rect->h;
-    } else {
-      mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either rectangle(rect) or rectangle(x, y, w, h)"));
+      n_args -= 4;
+      args += 4;
     }
 
-    shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
-    shape->shape = rectangle(x, y, w, h);
-    return MP_OBJ_FROM_PTR(shape);
-  })
-
-  MPY_BIND_STATICMETHOD_VAR(5, rounded_rectangle, {
-    float x = mp_obj_get_float(args[0]);
-    float y = mp_obj_get_float(args[1]);
-    float w = mp_obj_get_float(args[2]);
-    float h = mp_obj_get_float(args[3]);
-    float r1 = mp_obj_get_float(args[4]);
+    float r1 = mp_obj_get_float(args[0]);
     float r2 = r1;
     float r3 = r1;
     float r4 = r1;
-    if(n_args >= 6) { r2 = mp_obj_get_float(args[5]); }
-    if(n_args >= 7) { r3 = mp_obj_get_float(args[6]); }
-    if(n_args >= 8) { r4 = mp_obj_get_float(args[7]); }
+    if(n_args >= 2) { r2 = mp_obj_get_float(args[1]); }
+    if(n_args >= 3) { r3 = mp_obj_get_float(args[2]); }
+    if(n_args >= 4) { r4 = mp_obj_get_float(args[3]); }
 
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
     shape->shape = rounded_rectangle(x, y, w, h, r1, r2, r3, r4);
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(3, squircle, {
-    float x = mp_obj_get_float(args[0]);
-    float y = mp_obj_get_float(args[1]);
-    float s = mp_obj_get_float(args[2]);
+  MPY_BIND_STATICMETHOD_VAR(1, squircle, {
+    MPY_GET_XY_OR_VEC2(0, x, y)
+    float s = mp_obj_get_float(args[0]);
     float n = 4.0f;
-    if(n_args == 4) {
-      n = mp_obj_get_float(args[3]);
+    if(n_args == 2) {
+      n = mp_obj_get_float(args[1]);
       n = max(2.0f, n);
       n = max(2.0f, n);
     }
@@ -133,46 +130,41 @@ extern "C" {
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(6, arc, {
-    float x = mp_obj_get_float(args[0]);
-    float y = mp_obj_get_float(args[1]);
-    float i = mp_obj_get_float(args[2]);
-    float o = mp_obj_get_float(args[3]);
-    float f = mp_obj_get_float(args[4]);
-    float t = mp_obj_get_float(args[5]);
+  MPY_BIND_STATICMETHOD_VAR(5, arc, {
+    MPY_GET_XY_OR_VEC2(0, x, y)  // Effectively "pops" the x/y or vec2 args from the args array
+    float i = mp_obj_get_float(args[0]);
+    float o = mp_obj_get_float(args[1]);
+    float f = mp_obj_get_float(args[2]);
+    float t = mp_obj_get_float(args[3]);
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
     shape->shape = arc(x, y, f, t, i, o);
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(5, pie, {
-    float x = mp_obj_get_float(args[0]);
-    float y = mp_obj_get_float(args[1]);
-    float r = mp_obj_get_float(args[2]);
-    float f = mp_obj_get_float(args[3]);
-    float t = mp_obj_get_float(args[4]);
+  MPY_BIND_STATICMETHOD_VAR(4, pie, {
+    MPY_GET_XY_OR_VEC2(0, x, y)
+    float r = mp_obj_get_float(args[0]);
+    float f = mp_obj_get_float(args[1]);
+    float t = mp_obj_get_float(args[2]);
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
     shape->shape = pie(x, y, f, t, r);
     return MP_OBJ_FROM_PTR(shape);
   })
 
   MPY_BIND_STATICMETHOD_VAR(5, star, {
-    float x = mp_obj_get_float(args[0]);
-    float y = mp_obj_get_float(args[1]);
-    int s = mp_obj_get_float(args[2]);
-    float ro = mp_obj_get_float(args[3]);
-    float ri = mp_obj_get_float(args[4]);
+    MPY_GET_XY_OR_VEC2(0, x, y)
+    int s = mp_obj_get_float(args[0]);
+    float ro = mp_obj_get_float(args[1]);
+    float ri = mp_obj_get_float(args[2]);
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
     shape->shape = star(x, y, s, ro, ri);
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(5, line, {
-    float x1 = mp_obj_get_float(args[0]);
-    float y1 = mp_obj_get_float(args[1]);
-    float x2 = mp_obj_get_float(args[2]);
-    float y2 = mp_obj_get_float(args[3]);
-    float w = mp_obj_get_float(args[4]);
+  MPY_BIND_STATICMETHOD_VAR(3, line, {
+    MPY_GET_XY_OR_VEC2(0, x1, y1)
+    MPY_GET_XY_OR_VEC2(0, x2, y2)
+    float w = mp_obj_get_float(args[0]);
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
     shape->shape = line(x1, y1, x2, y2, w);
     return MP_OBJ_FROM_PTR(shape);

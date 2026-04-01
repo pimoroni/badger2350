@@ -66,6 +66,22 @@ extern "C" {
   };\
   static MP_DEFINE_CONST_DICT(prefix##_locals_dict, prefix##_locals_dict_table);
 
+#define MPY_GET_XY_OR_VEC2(_index, _x, _y)\
+  float _x;\
+  float _y;\
+  if (mp_obj_is_vec2(args[_index])) {\
+    const vec2_obj_t *vec2 = (vec2_obj_t *)MP_OBJ_TO_PTR(args[_index]);\
+    _x = vec2->v.x;\
+    _y = vec2->v.y;\
+    n_args -=1;\
+    args += 1;\
+  } else {\
+    _x = mp_obj_get_float(args[_index]);\
+    _y = mp_obj_get_float(args[_index + 1]);\
+    n_args -= 2;\
+    args += 2;\
+  }\
+
 
 #define self(self_in, T) T *self = (T *)MP_OBJ_TO_PTR(self_in)
 #define m_new_class(cls, ...) new(m_new(cls, 1)) cls(__VA_ARGS__)

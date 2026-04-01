@@ -87,7 +87,7 @@ extern "C" {
 
 
   MPY_BIND_LOCALS_DICT(brush,
-    //MPY_BIND_ROM_PTR_DEL(brush),
+    // MPY_BIND_ROM_PTR_DEL(brush),
     // MPY_BIND_ROM_PTR_STATIC(xor),
     // MPY_BIND_ROM_PTR_STATIC(brighten),
     MPY_BIND_ROM_PTR_STATIC(pattern),
