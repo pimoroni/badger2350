@@ -47,7 +47,7 @@ extern "C" {
   MPY_BIND_VAR(2, deflate, {
     rect_obj_t *self = (rect_obj_t *)MP_OBJ_TO_PTR(args[0]);
     float a1 = mp_obj_get_float(args[1]);
-    float a2 = n_args == 2 ? mp_obj_get_float(args[2]) : a1;
+    float a2 = n_args == 3 ? mp_obj_get_float(args[2]) : a1;
     self->r.deflate(a1, a2, a1, a2);
     return mp_const_none;
   })
@@ -55,7 +55,7 @@ extern "C" {
   MPY_BIND_VAR(2, inflate, {
     rect_obj_t *self = (rect_obj_t *)MP_OBJ_TO_PTR(args[0]);
     float a1 = mp_obj_get_float(args[1]);
-    float a2 = n_args == 2 ? mp_obj_get_float(args[2]) : a1;
+    float a2 = n_args == 3 ? mp_obj_get_float(args[2]) : a1;
     self->r.inflate(a1, a2, a1, a2);
     return mp_const_none;
   })
@@ -96,16 +96,16 @@ extern "C" {
   MPY_BIND_VAR(2, offset, {
     rect_obj_t *self = (rect_obj_t *)MP_OBJ_TO_PTR(args[0]);
 
-    if(mp_obj_is_type(args[1], &type_vec2)) {
-      vec2_obj_t *vec2 = (vec2_obj_t *)MP_OBJ_TO_PTR(args[1]);
-      self->r.offset(vec2->v);
+    if(n_args == 3) {
+      float xo = mp_obj_get_float(args[1]);
+      float yo = mp_obj_get_float(args[2]);
+      self->r.offset(xo, yo);
       return mp_const_none;
     }
 
-    if(n_args == 2) {
-      float xo = mp_obj_get_float(args[0]);
-      float yo = mp_obj_get_float(args[1]);
-      self->r.offset(xo, yo);
+    if(mp_obj_is_type(args[1], &type_vec2)) {
+      vec2_obj_t *vec2 = (vec2_obj_t *)MP_OBJ_TO_PTR(args[1]);
+      self->r.offset(vec2->v);
       return mp_const_none;
     }
 

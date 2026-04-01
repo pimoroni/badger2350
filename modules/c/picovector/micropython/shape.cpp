@@ -55,15 +55,18 @@ extern "C" {
     float x;
     float y;
     float r;
-    if(mp_obj_is_type(args[0], &type_vec2)) {
+
+    if(n_args == 3) {
+      x = mp_obj_get_float(args[0]);
+      y = mp_obj_get_float(args[1]);
+      r = mp_obj_get_float(args[2]);
+    } else if (n_args == 2 && mp_obj_is_type(args[0], &type_vec2)) {
       const vec2_obj_t *point = (vec2_obj_t *)MP_OBJ_TO_PTR(args[0]);
       x = point->v.x;
       y = point->v.y;
       r = mp_obj_get_float(args[1]);
-    }else{
-      x = mp_obj_get_float(args[0]);
-      y = mp_obj_get_float(args[1]);
-      r = mp_obj_get_float(args[2]);
+    } else {
+      mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either circle(p, r) or circle(x, y, r)"));
     }
 
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
@@ -71,11 +74,27 @@ extern "C" {
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(4, rectangle, {
-    float x = mp_obj_get_float(args[0]);
-    float y = mp_obj_get_float(args[1]);
-    float w = mp_obj_get_float(args[2]);
-    float h = mp_obj_get_float(args[3]);
+  MPY_BIND_STATICMETHOD_VAR(1, rectangle, {
+    float x;
+    float y;
+    float w;
+    float h;
+
+    if(n_args == 4) {
+      x = mp_obj_get_float(args[0]);
+      y = mp_obj_get_float(args[1]);
+      w = mp_obj_get_float(args[2]);
+      h = mp_obj_get_float(args[3]);
+    } else if (n_args == 1 && mp_obj_is_type(args[0], &type_rect)) {
+      const rect_t *rect = (rect_t *)MP_OBJ_TO_PTR(args[0]);
+      x = rect->x;
+      y = rect->y;
+      w = rect->w;
+      h = rect->h;
+    } else {
+      mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either rectangle(rect) or rectangle(x, y, w, h)"));
+    }
+
     shape_obj_t *shape = mp_obj_malloc_with_finaliser(shape_obj_t, &type_shape);
     shape->shape = rectangle(x, y, w, h);
     return MP_OBJ_FROM_PTR(shape);
@@ -126,7 +145,7 @@ extern "C" {
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(4, pie, {
+  MPY_BIND_STATICMETHOD_VAR(5, pie, {
     float x = mp_obj_get_float(args[0]);
     float y = mp_obj_get_float(args[1]);
     float r = mp_obj_get_float(args[2]);
@@ -137,7 +156,7 @@ extern "C" {
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(4, star, {
+  MPY_BIND_STATICMETHOD_VAR(5, star, {
     float x = mp_obj_get_float(args[0]);
     float y = mp_obj_get_float(args[1]);
     int s = mp_obj_get_float(args[2]);

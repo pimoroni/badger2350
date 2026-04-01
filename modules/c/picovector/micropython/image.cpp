@@ -81,7 +81,7 @@ MPY_BIND_VAR(2, window, {
     int w;
     int h;
 
-    if (mp_obj_is_type(args[1], &type_rect)) {
+    if (mp_obj_is_rect(args[1])) {
       const rect_obj_t *rect = (rect_obj_t *)MP_OBJ_TO_PTR(args[1]);
       x = rect->r.x;
       y = rect->r.y;
@@ -272,7 +272,7 @@ MPY_BIND_VAR(3, text, {
     }
 
     vec2_t point;
-    int arg_offset;
+    unsigned arg_offset;
 
     if(mp_obj_is_vec2(args[2])) {
       point = mp_obj_get_vec2(args[2]);
@@ -283,7 +283,7 @@ MPY_BIND_VAR(3, text, {
     }
 
     if(self->font) {
-      float size = mp_obj_get_float(args[arg_offset]);
+      float size = n_args >= (arg_offset + 1) ? mp_obj_get_float(args[arg_offset]) : 12;
       self->image->font()->draw(self->image, text, point.x, point.y, size);
     }
 

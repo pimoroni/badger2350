@@ -215,9 +215,9 @@ extern "C" {
     MPY_BIND_ROM_PTR_STATIC(oklch),
 
     // color modifiers
-    MPY_BIND_ROM_PTR(darken),
-    MPY_BIND_ROM_PTR(lighten),
-    MPY_BIND_ROM_PTR(blend),
+    // MPY_BIND_ROM_PTR(darken),
+    // MPY_BIND_ROM_PTR(lighten),
+    // MPY_BIND_ROM_PTR(blend),
 
     { MP_ROM_QSTR(MP_QSTR_black),  MP_ROM_PTR(&color_black_obj) },
     { MP_ROM_QSTR(MP_QSTR_grape),  MP_ROM_PTR(&color_grape_obj) },
