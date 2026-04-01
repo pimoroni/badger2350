@@ -447,10 +447,11 @@ namespace picovector {
 
   void image_t::span(int x, int y, int w) {
     if(y < _clip.y || y >= _clip.y + _clip.h) return;
-    if(x + w < 0 || x >= _clip.x + _clip.w) return;
+    if(x + w < _clip.x || x >= _clip.x + _clip.w) return;
 
-    if(x < 0) {
-      w += x; x = 0;
+    if(x < _clip.x) {
+      w -= _clip.x - x;
+      x = _clip.x;
     }
 
     if(x + w >= _clip.x + _clip.w) {
@@ -461,10 +462,11 @@ namespace picovector {
 
   void image_t::masked_span(int x, int y, int w, uint8_t *mask) {
     if(y < _clip.y || y >= _clip.y + _clip.h) return;
-    if(x + w < 0 || x >= _clip.x + _clip.w) return;
+    if(x + w < _clip.x || x >= _clip.x + _clip.w) return;
 
-    if(x < 0) {
-      w += x; x = 0;
+    if(x < _clip.x) {
+      w -= _clip.x - x;
+      x = _clip.x;
     }
 
     if(x + w >= _clip.x + _clip.w) {
