@@ -31,8 +31,13 @@ extern "C" {
   MPY_BIND_NEW(rect, {
     rect_obj_t *self = mp_obj_malloc_with_finaliser(rect_obj_t, type);
 
-    if(n_args != 4 && n_args != 0) {
-      mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected rect() or rect(x, y, w, h)"));
+    if(n_args == 0) {
+      return MP_OBJ_FROM_PTR(self);
+    }
+
+    if(n_args == 1) {
+      self->r = mp_obj_get_rect(args[0]);
+      return MP_OBJ_FROM_PTR(self);
     }
 
     if(n_args == 4) {
@@ -40,8 +45,10 @@ extern "C" {
       self->r.y = mp_obj_get_float(args[1]);
       self->r.w = mp_obj_get_float(args[2]);
       self->r.h = mp_obj_get_float(args[3]);
+      return MP_OBJ_FROM_PTR(self);
     }
-    return MP_OBJ_FROM_PTR(self);
+
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected rect(), rect(rect) or rect(x, y, w, h)"));
   })
 
   MPY_BIND_VAR(2, deflate, {
@@ -49,7 +56,7 @@ extern "C" {
     float a1 = mp_obj_get_float(args[1]);
     float a2 = n_args == 3 ? mp_obj_get_float(args[2]) : a1;
     self->r.deflate(a1, a2, a1, a2);
-    return mp_const_none;
+    return MP_OBJ_FROM_PTR(self);
   })
 
   MPY_BIND_VAR(2, inflate, {
@@ -57,7 +64,7 @@ extern "C" {
     float a1 = mp_obj_get_float(args[1]);
     float a2 = n_args == 3 ? mp_obj_get_float(args[2]) : a1;
     self->r.inflate(a1, a2, a1, a2);
-    return mp_const_none;
+    return MP_OBJ_FROM_PTR(self);
   })
 
   MPY_BIND_CLASSMETHOD_ARGS1(intersection, rect_in, {
@@ -96,17 +103,10 @@ extern "C" {
   MPY_BIND_VAR(2, offset, {
     rect_obj_t *self = (rect_obj_t *)MP_OBJ_TO_PTR(args[0]);
 
-    if(n_args == 3) {
-      float xo = mp_obj_get_float(args[1]);
-      float yo = mp_obj_get_float(args[2]);
+    if(n_args == 3 || (n_args == 2 && mp_obj_is_vec2(args[1]))) {
+      MPY_GET_XY_OR_VEC2(1, xo, yo);
       self->r.offset(xo, yo);
-      return mp_const_none;
-    }
-
-    if(mp_obj_is_type(args[1], &type_vec2)) {
-      vec2_obj_t *vec2 = (vec2_obj_t *)MP_OBJ_TO_PTR(args[1]);
-      self->r.offset(vec2->v);
-      return mp_const_none;
+      return MP_OBJ_FROM_PTR(self);
     }
 
     mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid parameters, expected either offset(p) or offset(x, y)"));
