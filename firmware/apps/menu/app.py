@@ -90,7 +90,7 @@ class Apps:
         label = self.active.name
         w, _ = screen.measure_text(label)
         screen.pen = color.black
-        screen.shape(shape.rectangle(cx - (w / 2) - 4, screen.height - 20, w + 8, 15, 4))
+        screen.shape(shape.rectangle(cx - (w / 2) - 4, screen.height - 20, w + 8, 15))
         screen.pen = color.white
         screen.text(label, cx - (w / 2), screen.height - 19)
 
