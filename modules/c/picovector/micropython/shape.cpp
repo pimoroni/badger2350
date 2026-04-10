@@ -151,7 +151,7 @@ extern "C" {
     return MP_OBJ_FROM_PTR(shape);
   })
 
-  MPY_BIND_STATICMETHOD_VAR(5, star, {
+  MPY_BIND_STATICMETHOD_VAR(4, star, {
     MPY_GET_XY_OR_VEC2(0, x, y)
     int s = mp_obj_get_float(args[0]);
     float ro = mp_obj_get_float(args[1]);
