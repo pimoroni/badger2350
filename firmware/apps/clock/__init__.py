@@ -651,7 +651,7 @@ def update():
     # We then get the current time, and set an RTC alarm to wake up at the start of
     # the next minute and run all this again, so the clock can update.
     currentsecond = rtc.datetime()[5]
-    rtc.set_alarm(seconds=60-currentsecond)
+    rtc.set_alarm(seconds=60 - currentsecond)
     display_time()
 
     # Update the screen
