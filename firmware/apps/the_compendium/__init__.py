@@ -117,10 +117,10 @@ def init_raycast():
     global rays, ray_vectors
     num_rays = screen.width
     temp_rays = []
-    
+
     plane_dist = 6
     w_proj = (plane_dist * math.tan(player.fov / 2)) * 2
-    
+
     for ray_no in range(num_rays):
         x_max = num_rays - 1
         x_proj = (((ray_no * 2) - x_max) / x_max) * (w_proj / 2)
