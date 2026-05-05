@@ -22,8 +22,11 @@ set(CMAKE_CXX_STANDARD 17)
 # PicoVector and supporting libs
 find_package(PICOVECTOR CONFIG REQUIRED)
 
-# Build picovector for Tufty 2350
+# Build picovector for Badger 2350
 target_compile_definitions(usermod_picovector INTERFACE BADGER=1)
+
+# Badgeware input module
+include(modules/c/input/micropython)
 
 # Essential
 include(pimoroni_i2c/micropython)
