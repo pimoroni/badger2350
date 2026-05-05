@@ -16,24 +16,22 @@ list(APPEND CMAKE_MODULE_PATH "${PIMORONI_PICO_PATH}/micropython/modules")
 # Allows us to find downstream /modules/c/*/
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 
-set(PNGDEC_DIR "${CMAKE_CURRENT_LIST_DIR}/../modules/c/pngdec")
-set(JPEGDEC_DIR "${CMAKE_CURRENT_LIST_DIR}/../modules/c/jpegdec")
-
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 17)
+
+# PicoVector and supporting libs
+find_package(PICOVECTOR CONFIG REQUIRED)
+
+# Build picovector for Tufty 2350
+target_compile_definitions(usermod_picovector INTERFACE BADGER=1)
 
 # Essential
 include(pimoroni_i2c/micropython)
 
+# Badger display driver
 include(modules/c/ssd1680/micropython)
-include(modules/c/picovector/micropython)
 
-# Build picovector for Pico
-target_compile_definitions(usermod_picovector INTERFACE BADGER=1 PICO=1)
-
-# Build jpegdec for Pico
-target_compile_definitions(jpegdec PRIVATE PICO_BUILD)
-
+# QR Code Module
 include(qrcode/micropython/micropython)
 
 # Sensors & Breakouts
