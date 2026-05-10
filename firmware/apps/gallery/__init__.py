@@ -138,10 +138,10 @@ def update():
         badge.mode(FAST_UPDATE | NON_BLOCKING)
         screen.pen = color.white
         screen.shape(shape.rectangle(
-            (screen.width / 2) - (width / 2) - 8, 1, width + 16, 17, 6))
+            (screen.width / 2) - (width / 2) - 8, 1, width + 16, 17))
         screen.pen = color.black
         screen.shape(shape.rectangle(
-            (screen.width / 2) - (width / 2) - 8, 1, width + 16, 17, 6).stroke(1))
+            (screen.width / 2) - (width / 2) - 8, 1, width + 16, 17).stroke(1))
         screen.text(title, (screen.width / 2) - (width / 2), 3)
 
     badge.update()
