@@ -74,6 +74,12 @@
 #define BW_VREG_VOLTAGE  (0b01011)  // 1.10V
 */
 
+// The cyw43 SPI PIO clock is clk_sys / CYW43_PIO_CLOCK_DIV_INT (a fixed divider).
+// The SDK default (2) gives 125MHz at our 250MHz clock, which is too fast for the
+// wireless chip's SPI: bus init fails, so every cyw43 GPIO read redoes a ~70ms
+// bring-up. Divide by 3 (~83MHz) so the chip is reachable when overclocked.
+#define CYW43_PIO_CLOCK_DIV_INT 3
+
 // --- RP2350 VARIANT ---
 #define PICO_RP2350A 1
 
