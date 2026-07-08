@@ -55,7 +55,7 @@ namespace pimoroni {
   void SSD1680::busy_wait() {
     while(is_busy()) {
 #ifdef MICROPY_BUILD_TYPE
-      mp_handle_pending(true);
+      mp_handle_pending(MP_HANDLE_PENDING_CALLBACKS_AND_EXCEPTIONS);
 #endif
       tight_loop_contents();
     }
