@@ -48,8 +48,11 @@ void mp_pico_panic(const char *fmt, ...) {
 
 mp_obj_t _sleep_get_wake_reason(void) {
     uint8_t wake_reason = powman_get_wake_reason();
-    if(powman_wake_watchdog())           return MP_ROM_INT(WAKE_WATCHDOG);
+    // A software-triggered double-tap (reset_into_msc) reboots via the watchdog,
+    // so it looks like a watchdog reset too. Check the double-tap flag first so
+    // it wins and main.py enters USB Mass Storage mode rather than plain-booting.
     if(wake_reason & POWMAN_DOUBLETAP)   return MP_ROM_INT(WAKE_DOUBLETAP);
+    if(powman_wake_watchdog())           return MP_ROM_INT(WAKE_WATCHDOG);
     if(powman_wake_reset())              return MP_ROM_INT(WAKE_RESET);
     if(wake_reason & POWMAN_WAKE_PWRUP0) return MP_ROM_INT(WAKE_VBUS_DETECT);
     if(wake_reason & POWMAN_WAKE_PWRUP1) return MP_ROM_INT(WAKE_RTC);
@@ -191,6 +194,18 @@ static mp_obj_t _test_psram_cs() {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(_test_psram_cs_obj, _test_psram_cs);
 
+/*! \brief Reboot cleanly into USB Mass Storage mode
+ *
+ * Sets the double-tap flag and triggers a watchdog reset. On the next boot the
+ * badge reports a WAKE_DOUBLETAP wake reason, so main.py enters MSC mode exactly
+ * as if RESET had been physically double-tapped. Does not return.
+ */
+mp_obj_t _reset_into_msc(void) {
+    powman_reset_into_msc();
+    return mp_const_none; // should never get here!
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(_reset_into_msc_obj, _reset_into_msc);
+
 static const mp_map_elem_t sleep_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_powman) },
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&_sleep_sleep_obj) },
@@ -199,6 +214,7 @@ static const mp_map_elem_t sleep_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_wake_reason), MP_ROM_PTR(&_sleep_get_wake_reason_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_wake_buttons), MP_ROM_PTR(&_sleep_get_wake_buttons_obj) },
     { MP_ROM_QSTR(MP_QSTR_shipping_mode), MP_ROM_PTR(&_shipping_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_into_msc), MP_ROM_PTR(&_reset_into_msc_obj) },
     { MP_ROM_QSTR(MP_QSTR__test_psram_cs), MP_ROM_PTR(&_test_psram_cs_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_WAKE_BUTTON_A), MP_ROM_INT(WAKE_BUTTON_A) },
