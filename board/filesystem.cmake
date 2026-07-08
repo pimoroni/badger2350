@@ -19,17 +19,17 @@ if (EXISTS "${PIMORONI_TOOLS_DIR}/py_decl/py_decl.py")
     )
 endif()
 
-# 4100 sectors (16MB) total
-# 256 sectors (1MB) allocated for LFS filesystem
-# 512 sectors (2MB) allocated for MicroPython
+# 4096 sectors (16MB) total
+# 512 sectors (2MB) allocated for MicroPython firmware
 # 256 sectors (1MB) allocated for ROMFS
-# 3076 sectors (~12MB) for user filesystem
+# 3072 sectors (12MB) for user (FAT) filesystem
+# 256 sectors (1MB) reserved for LittleFS (via dir2uf2 --fs-reserve below)
 
 if (EXISTS "${PIMORONI_TOOLS_DIR}/ffsmake/build/ffsmake" AND EXISTS "${PIMORONI_FATFS_DIR}")
     MESSAGE("ffsmake: Using root ${PIMORONI_FATFS_DIR}.")
     MESSAGE("ffsmake: Outputting filesystem binary: ${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin")
     add_custom_target("${MICROPY_TARGET}-fatfs.bin" ALL
-        COMMAND "${PIMORONI_TOOLS_DIR}/ffsmake/build/ffsmake" --label="${PIMORONI_FATFS_LABEL}" --sector-count=3076 --force --directory "${PIMORONI_FATFS_DIR}" --output "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin"
+        COMMAND "${PIMORONI_TOOLS_DIR}/ffsmake/build/ffsmake" --label="${PIMORONI_FATFS_LABEL}" --sector-count=3072 --force --directory "${PIMORONI_FATFS_DIR}" --output "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin"
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "ffsmake: Packing FatFS filesystem to ${MICROPY_TARGET}-fatfs.bin."
         DEPENDS ${MICROPY_TARGET}
