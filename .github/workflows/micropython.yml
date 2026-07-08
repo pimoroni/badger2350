@@ -68,6 +68,7 @@ jobs:
       run: |
         source $CI_PROJECT_ROOT/ci/micropython.sh
         ci_install_build_deps
+        ci_python_prepare
 
     - name: "Prepare All: Prepare tools & dependencies"
       if: steps.cache-prepare-all.outputs.cache-hit != 'true'
@@ -77,6 +78,7 @@ jobs:
         mkdir -p $CI_BUILD_ROOT
         ci_install_build_deps
         ci_prepare_all
+        ci_python_prepare
 
     - name: "MicroPython: Configure"
       shell: bash
