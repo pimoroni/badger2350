@@ -138,6 +138,7 @@ class Badge():
         if MODEL == "tufty":
             display.fullres(bool(mode & HIRES))
             display.set_vsync(bool(mode & VSYNC))
+            display.set_framerate(90)
 
         elif MODEL == "badger":
             display.blocking(not bool(self._current_mode & NON_BLOCKING))

@@ -56,3 +56,4 @@ bool psram_cs1_pullup_check(void);
 void powman_init();
 int powman_setup_gpio_wakeup(int hw_wakeup, int gpio, bool edge, bool high, uint64_t timeout_ms);
 int powman_off(void);
+void powman_reset_into_msc(void);
