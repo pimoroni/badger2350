@@ -134,10 +134,15 @@ class _text:
         if is_vector_font and font_size is None:
             raise ValueError("scroll_text: vector fonts require a font_size")
 
+        # Bitmap fonts take an integer scale (1, 2, 3, ...); default to 1x so we
+        # pass a real scale through rather than None (the text API rejects None).
+        if not is_vector_font and font_size is None:
+            font_size = 1
+
         target = target or screen
         target.font = font_face
 
-        tw, th = target.measure_text(text, font_size) if isinstance(font_face, font) else target.measure_text(text)
+        tw, th = target.measure_text(text, font_size)
 
         if is_vector_font:
             th = font_size
@@ -170,7 +175,8 @@ class _text:
 
             target.font = font_face
 
-            # The "font_size" argument is ignored for vector text
+            # font_size is the point size for vector fonts and the integer scale
+            # for bitmap fonts (see picovector image.text).
             target.text(text, offset, font_size)
 
             if isinstance(gap, int):
