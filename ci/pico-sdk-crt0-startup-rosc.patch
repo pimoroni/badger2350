@@ -1,20 +1,54 @@
 diff --git a/src/rp2_common/pico_crt0/crt0.S b/src/rp2_common/pico_crt0/crt0.S
-index e408b7d..2b986a5 100644
+index 7fda00c9..e748d4a5 100644
 --- a/src/rp2_common/pico_crt0/crt0.S
 +++ b/src/rp2_common/pico_crt0/crt0.S
-@@ -10,6 +10,7 @@
+@@ -10,6 +10,8 @@
  #include "pico/platform/cpu_regs.h"
  
  #include "hardware/regs/addressmap.h"
 +#include "hardware/regs/rosc.h"
++#include "hardware/regs/powman.h"
  #include "hardware/regs/sio.h"
- #include "pico/binary_info/defs.h"
- #include "boot/picobin.h"
-@@ -414,6 +415,16 @@ _call_xip_setup:
+ #include "hardware/regs/xip.h"
+ #include "hardware/regs/watchdog.h"
+@@ -518,6 +520,49 @@ _call_xip_setup:
      add sp, #256
  #endif
  
-+    // Increase ROSC frequency to ~48MHz (range 14.4 - 96)
++    // Raise core voltage to BW_VREG_VOLTAGE before any clock boost.
++    // Mirrors the SDK's vreg_set_voltage()
++#if !PICO_RP2040
++    // Unlock VREG control:  *(VREG_CTRL set-alias) = PASSWORD | UNLOCK
++    ldr  r0, =(POWMAN_BASE + POWMAN_VREG_CTRL_OFFSET + REG_ALIAS_SET_BITS)
++    ldr  r1, =(POWMAN_PASSWORD_BITS | POWMAN_VREG_CTRL_UNLOCK_BITS)
++    str  r1, [r0]
++
++    ldr  r0, =(POWMAN_BASE + POWMAN_VREG_OFFSET)   // r0 = &powman->vreg
++    ldr  r2, =POWMAN_VREG_UPDATE_IN_PROGRESS_BITS
++    // Wait for any prior VREG update to finish
++1:
++    ldr  r1, [r0]
++    tst  r1, r2
++    bne  1b
++
++    // *(vreg xor-alias) = (*vreg ^ (PASSWORD | BW_VREG_VOLTAGE<<VSEL_LSB)) & (PASSWORD | VSEL_BITS)
++    ldr  r1, [r0]
++    ldr  r2, =(POWMAN_PASSWORD_BITS | (BW_VREG_VOLTAGE << POWMAN_VREG_VSEL_LSB))
++    eors r1, r1, r2
++    ldr  r2, =(POWMAN_PASSWORD_BITS | POWMAN_VREG_VSEL_BITS)
++    ands r1, r1, r2
++    ldr  r2, =(POWMAN_BASE + POWMAN_VREG_OFFSET + REG_ALIAS_XOR_BITS)
++    str  r1, [r2]
++
++    // Wait for the VREG update to complete
++    ldr  r2, =POWMAN_VREG_UPDATE_IN_PROGRESS_BITS
++1:
++    ldr  r1, [r0]
++    tst  r1, r2
++    bne  1b
++#endif
++
++    // Increase ROSC frequency to ~54MHz @ 1.2V (range 14.4 - 96)
 +    // Speeds up memory zero init and preinit phases.
 +    ldr r0, =(ROSC_BASE + ROSC_DIV_OFFSET)
 +#if PICO_RP2040
@@ -26,4 +60,4 @@ index e408b7d..2b986a5 100644
 +
      // In a NO_FLASH binary, don't perform .data etc copy, since it's loaded
      // in-place by the SRAM load. Still need to clear .bss
- #if !PICO_NO_FLASH
+ #if !PICO_CRT0_NO_DATA_COPY
