@@ -155,10 +155,9 @@ def draw():
 def update():
 
     ui.draw_alert("Connecting to WiFi Network...")
-    wifi.connect()
 
     # wait here until the wifi has connected
-    while not wifi.tick():
+    while not wifi.connect():
         pass
 
     ui.draw_alert("Getting weather data...")

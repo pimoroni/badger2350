@@ -620,9 +620,8 @@ def update():
     # This starts the chain of connecting to the WiFi and pulling the correct time.
     elif badge.pressed(BUTTON_B) or time.gmtime()[0] <= 2021:
         user_message("Please Wait!", ["Connecting to WiFi..."])
-        wifi.connect()
         # Block until WiFi is connected or an error occurs
-        while not wifi.tick():
+        while not wifi.connect():
             pass
         if update_time(REGION, TIMEZONE) is False:
             user_message("Error!", ["Unable to get time", "from NTP server."])
