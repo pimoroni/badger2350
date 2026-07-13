@@ -7,6 +7,8 @@ from badgeware import fatal_error
 _timeout_ticks = None
 _timeout = 0
 _retries = 0
+_ssid = None
+_psk = None
 wlan = None
 
 
@@ -22,30 +24,29 @@ _status_text = {
 
 
 def get_status(index):
-  return _status_text[index].format(ssid=_ssid, psk=_psk)
+  return _status_text[index].format(ssid=_ssid)
 
 
-def tick():
-  global _timeout_ticks, _timeout, _retries, _ssid, _psk
+def _tick():
+  # Advance the connection state machine: retry on timeout or error, then fail.
+  global _timeout_ticks, _retries
 
-  if wlan is not None and wlan.isconnected():
-    return True
+  if wlan is None or wlan.isconnected():
+    return
 
   timed_out = _timeout_ticks is not None and badge.ticks > _timeout_ticks
-  error = wlan is not None and wlan.status() not in (0, 1, 2, 3)
+  error = wlan.status() not in (0, 1, 2, 3)
 
-  if (timed_out or error):
+  if timed_out or error:
     if _retries:
       _retries -= 1
       _timeout_ticks = badge.ticks + (_timeout * 1000)
       wlan.connect(_ssid, _psk)
-      return False
+      return
 
     wlan.active(False)
     fatal_error("WiFi Connection Timed Out" if timed_out else "WiFi Connection Failed", get_status(wlan.status()))
     _timeout_ticks = None
-
-  return False
 
 
 def connect(ssid=None, psk=None, timeout=60, retries=5):
@@ -59,7 +60,8 @@ def connect(ssid=None, psk=None, timeout=60, retries=5):
       fatal_error("Missing Details!", "Put your badge into disk mode (tap RESET twice)\nEdit 'secrets.py' to set WiFi details and your local region")
 
   if wlan:
-    return wlan.isconnected()
+    _tick()
+    return is_connected()
 
   wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
@@ -84,8 +86,7 @@ def disconnect():
 
 
 def status():
-  global wifi
-  if wifi is None:
+  if wlan is None:
     return 0, get_status(0)  # Idle
   return wlan.status(), get_status(wlan.status())
 
