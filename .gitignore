@@ -44,3 +44,7 @@ board/version.py
 venv
 .vscode
 .DS_Store
+
+# Python bytecode cache
+__pycache__/
+*.pyc
