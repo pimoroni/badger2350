@@ -6,7 +6,7 @@ import powman
 import binascii
 
 MODEL = os.uname().machine[9:-17].lower()
-UID = binascii.hexlify(machine.unique_id()).decode("ASCII")
+UID = binascii.hexlify(machine.unique_id()).decode("ascii")
 
 builtins.LORES = 0b00
 builtins.HIRES = 0b01
