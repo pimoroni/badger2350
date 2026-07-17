@@ -14,7 +14,6 @@ static uint32_t display_refcount = 0;
 
 #define MP_OBJ_TO_PTR2(o, t) ((t *)(uintptr_t)(o))
 #define m_new_class(cls, ...) new(m_new(cls, 1)) cls(__VA_ARGS__)
-#define m_del_class(cls, ptr) ptr->~cls();m_del(cls, ptr, 1)
 
 extern "C" {
 #include "ssd1680_bindings.h"
@@ -39,7 +38,7 @@ mp_obj_t ssd1680_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
 mp_obj_t ssd1680___del__(mp_obj_t self_in) {
     display_refcount--;
     if(display_refcount == 0) {
-        m_del_class(SSD1680, display);
+        display->~SSD1680();
         display = nullptr;
     }
     return mp_const_none;
