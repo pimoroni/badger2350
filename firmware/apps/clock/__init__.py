@@ -46,7 +46,7 @@ state = {
 State.load("clock", state)
 
 if state["first_run"]:
-    icons = SpriteSheet("assets/icons.png", 5, 1)
+    icons = image.load("assets/icons.png").spritesheet(5, 1)
 
 # Loading all the assets.
 textclock_font = rom_font.ziplock
@@ -65,11 +65,11 @@ else:
     drawing_brush = palette[0]
 
 if state["clock_style"] == DisplayType.scribble:
-    numerals = SpriteSheet("assets/scribble_num.png", 10, 1)
+    numerals = image.load("assets/scribble_num.png").spritesheet(10, 1)
     background = image.load("assets/scribble_bg.png")
     clock_dots = image.load("assets/scribble_dots.png")
 elif state["clock_style"] == DisplayType.sevenseg:
-    numerals = SpriteSheet("assets/digital_num.png", 10, 1)
+    numerals = image.load("assets/digital_num.png").spritesheet(10, 1)
     background = None
     clock_dots = image.load("assets/digital_dots.png")
 
@@ -163,14 +163,14 @@ def display_time():
     # For the scribble and seven segment displays, we're reusing the same variables
     # for numerals, dots etc and just loading different files into them to save memory.
     elif state["clock_style"] == DisplayType.scribble:
-        numerals = SpriteSheet("assets/scribble_num.png", 10, 1)
+        numerals = image.load("assets/scribble_num.png").spritesheet(10, 1)
         background = image.load("assets/scribble_bg.png")
         clock_dots = image.load("assets/scribble_dots.png")
         screen.font = scribble_font
         draw_scribble_clock(currenttime)
 
     elif state["clock_style"] == DisplayType.sevenseg:
-        numerals = SpriteSheet("assets/digital_num.png", 10, 1)
+        numerals = image.load("assets/digital_num.png").spritesheet(10, 1)
         clock_dots = image.load("assets/digital_dots.png")
         background = None
         draw_sevenseg_clock(currenttime)

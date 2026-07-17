@@ -1,5 +1,5 @@
 
-ui_tex = SpriteSheet("assets/ui.png", 12, 1)
+ui_tex = image.load("assets/ui.png").spritesheet(12, 1)
 
 SCREEN_CENTRE_X = screen.width / 2
 
