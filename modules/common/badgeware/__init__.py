@@ -247,7 +247,6 @@ builtins.fatal_error = fatal_error
 __import__(".frozen/badgeware/badge")
 __import__(".frozen/badgeware/math")
 __import__(".frozen/badgeware/text")
-__import__(".frozen/badgeware/sprite")
 __import__(".frozen/badgeware/filesystem")
 __import__(".frozen/badgeware/memory")
 __import__(".frozen/badgeware/rtc")

@@ -145,18 +145,8 @@ class Monster:
 
         return current_level.get_map_def(self.lookat_x, self.lookat_y)
 
-    # If the monster's texture is an 8-way sprite sheet, this delivers the right sprite according to
-    # its angle to the player. Otherwise just delivers the single sprite.
     def update_sprite(self):
-        if isinstance(self.spritesheet, SpriteSheet):
-            rel_pos = vec2(self.player.x - self.x, self.player.y - self.y)
-            dot_product = (rel_pos.x * self.x_vector) + (rel_pos.y * self.y_vector)
-            cross_product = (rel_pos.y * self.x_vector) - (rel_pos.x * self.y_vector)
-            view_angle = math.atan2(cross_product, dot_product)
-            texture = math.floor(((view_angle + math.pi) / (2 * math.pi)) * 7)
-            self.sprite = self.spritesheet.sprite(texture, 0)
-        else:
-            self.sprite = self.spritesheet
+        self.sprite = self.spritesheet
 
     def add_inventory(self, items):
         for item in items:

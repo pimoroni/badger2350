@@ -62,7 +62,7 @@ def init_level(new_level, transition, entry_point, angle):
 
     current_level = level.levels[new_level]
     background = image.load(f"assets/{current_level.id}_bg.png")
-    tilemap = SpriteSheet(f"assets/{current_level.textures}.png", 16, 1)
+    tilemap = image.load(f"assets/{current_level.textures}.png").spritesheet(16, 1)
 
     init_player(transition, entry_point, angle)
     init_monsters()
