@@ -9,7 +9,13 @@ import ui
 screen.font = rom_font.nope
 
 files = []
-total_files = len(os.listdir("/system/apps/gallery/images"))
+
+# list the png images, skipping macOS sidecar files and dotfiles
+image_files = [
+    file for file in os.listdir("/system/apps/gallery/images")
+    if not file.startswith(("__", ".")) and file.endswith(".png")
+]
+total_files = len(image_files)
 
 # we don't want to continue if there are no images to show!
 if total_files == 0:
@@ -39,16 +45,13 @@ ui.draw_alert("Loading...")
 badge.mode(MEDIUM_UPDATE | NON_BLOCKING)
 
 # create a dictionary of all the images in the images directory
-for file in os.listdir("/system/apps/gallery/images"):
-
-    file = file.rsplit("/", 1)[-1]
-    name, ext = file.rsplit(".", 1)
-    if ext == "png":
-        files.append({
-            "name": file,
-            "title": name.replace("-", " "),
-            "image": image.load(f"/system/apps/gallery/images/{name}.png")
-        })
+for file in image_files:
+    name = file.rsplit(".", 1)[0]
+    files.append({
+        "name": file,
+        "title": name.replace("-", " "),
+        "image": image.load(f"/system/apps/gallery/images/{name}.png")
+    })
 
 
 # given a gallery image index it clamps it into the range of available images
