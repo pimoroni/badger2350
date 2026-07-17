@@ -3,6 +3,8 @@ import math
 
 
 
+DEFAULT_ICON = image.load("default_icon.png")
+
 # icon shape
 shade_brush = color.rgb(0, 0, 0, 50)
 
@@ -69,8 +71,9 @@ class Apps:
             name = " ".join([capitalize(word) for word in path.split("_")])
 
             if is_dir(f"{root}/{path}"):
-                if file_exists(f"{root}/{path}/icon.png"):
-                    App(self.apps, name, path, image.load(f"{root}/{path}/icon.png"))
+                if file_exists(f"{root}/{path}/__init__.py") and path != "menu":
+                    icon = image.load(f"{root}/{path}/icon.png") if file_exists(f"{root}/{path}/icon.png") else DEFAULT_ICON
+                    App(self.apps, name, path, icon)
 
     @property
     def active(self):
