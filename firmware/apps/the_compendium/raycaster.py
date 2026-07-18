@@ -127,13 +127,7 @@ def cast_ray(player, current_level, ray, rel_ray, ray_no, render_queue):
 
         screen_x = ray_no
 
-        distance = 0
-
-        # total_distance += math.cos(rel_ray[0])
-        if vertical:
-            distance = abs(ray_length_y - angle_scale_factor_y) * math.cos(rel_ray[0])
-        else:
-            distance = abs(ray_length_x - angle_scale_factor_x) * math.cos(rel_ray[0])
+        distance = math.sqrt((ray.x * total_distance) ** 2 + (ray.y * total_distance) ** 2) * math.cos(rel_ray)
 
         render_queue.append(RayIntersection(pos_x, pos_y, current_square_x, current_square_y, distance, map_def_index, screen_x, orientation, offset))
 
@@ -161,7 +155,7 @@ def render_monster(monster, player, render_queue):
         view_angle += 2 * math.pi
 
     x_pos = SCREEN_CENTRE_X - ((view_angle / (player.fov / 2)) * SCREEN_CENTRE_X)
-    dist = math.sqrt(rel_pos.x ** 2 + rel_pos.y ** 2) * math.cos(view_angle)
+    dist = math.sqrt(rel_pos.x ** 2 + rel_pos.y ** 2)
     if dist > monster.radius:
         render_queue.append(MonsterSprite(monster.x, monster.y, monster.grid_x, monster.grid_y, dist, -2, x_pos, monster.sprite))
 

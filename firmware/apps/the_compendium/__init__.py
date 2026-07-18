@@ -32,7 +32,7 @@ monsters = []
 rays = []
 ray_vectors = []
 render_queue = []
-Y_SCALE = 0.7
+Y_SCALE = 0.9
 previous_screen = 0
 current_level = None
 
@@ -107,26 +107,36 @@ def init_monsters():
 # This sets up a field of rays according to the player FOV. Done once at the start to avoid doing
 # expensive trig functions hundreds of times each update.
 def init_raycast():
-    global rays
+    global rays, ray_vectors
     num_rays = screen.width
-    rayStep = player.fov / num_rays
-    rayAngle = player.angle - (player.fov / 2)
     temp_rays = []
-    for _ in range(num_rays):
+
+    plane_dist = 6
+    w_proj = (plane_dist * math.tan(player.fov / 2)) * 2
+
+    for ray_no in range(num_rays):
+        x_max = num_rays - 1
+        x_proj = (((ray_no * 2) - x_max) / x_max) * (w_proj / 2)
+        rayAngle = math.atan2(x_proj, plane_dist)
         ray_x = math.cos(rayAngle)
         ray_y = math.sin(rayAngle)
         temp_rays.insert(0, (rayAngle, vec2(ray_x, ray_y)))
-        rayAngle += rayStep
     rays = temp_rays
+    ray_vectors.clear()
+    for i in range(len(rays) - 1):
+        base_ray = rays[i][1]
+        ray_x = (player.x_vector * base_ray.x) - (player.y_vector * base_ray.y)
+        ray_y = (player.y_vector * base_ray.x) + (player.x_vector * base_ray.y)
+        ray_vectors.append(vec2(ray_x, ray_y))
 
 
 # Takes the rays defined above and generates a series of vectors for their directions,\# rotated by the player's angle.
 def update_player_rays():
-    ray_vectors.clear()
-    for ray in rays:
-        ray_x = (player.x_vector * ray[1].x) - (player.y_vector * ray[1].y)
-        ray_y = (player.y_vector * ray[1].x) + (player.x_vector * ray[1].y)
-        ray_vectors.append(vec2(ray_x, ray_y))
+    global ray_vectors
+    for i in range(len(rays) - 1):
+        base_ray = rays[i][1]
+        ray_vectors[i].x = (player.x_vector * base_ray.x) - (player.y_vector * base_ray.y)
+        ray_vectors[i].y = (player.y_vector * base_ray.x) + (player.x_vector * base_ray.y)
 
 
 # Renders the 2.5D of the scene. It casts rays, finds wall distance and puts it all in a render queue. Then does the same with monsters
@@ -138,7 +148,11 @@ def render_scene():
 
     for ray_no in range(len(ray_vectors)):
         ray = ray_vectors[ray_no]
-        rel_ray = rays[ray_no]
+        central_ray_vec = ray_vectors[int(len(ray_vectors) / 2)]
+        central_ray = math.atan2(central_ray_vec.y, central_ray_vec.x)
+        this_ray_vector = ray_vectors[ray_no]
+        this_ray = math.atan2(this_ray_vector.y, this_ray_vector.x)
+        rel_ray = this_ray - central_ray
         raycaster.cast_ray(player, current_level, ray, rel_ray, ray_no, render_queue)
 
     for m in monsters:

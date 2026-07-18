@@ -168,7 +168,7 @@ barrel = image.load("assets/barrel.png")
 ninja = image.load("assets/ninja.png")
 
 monster_db = {
-    1: (math.pi / 1.5, 0.5, 0.3, math.pi / 20, -1, "Player", behaviours.Behaviour, column, InteractionClass.NONE, None, "", []),
+    1: (1.0472, 0.5, 0.3, math.pi / 20, -1, "Player", behaviours.Behaviour, column, InteractionClass.NONE, None, "", []),
     2: (math.pi / 4, 0.25, 0.7, math.pi / 20, -2, "Pillar", behaviours.FreezeBehaviour, column, InteractionClass.EXAMINE, None, "Doric? Or Ionic? I can never remember.", []),
     3: (math.pi / 4, 0.25, 0.7, math.pi / 20, -3, "Solderbeard", behaviours.FreezeBehaviour, solderbeard, InteractionClass.SPEAK, "sb_greeting", "He's probably nicer than he smells.", []),
     4: (math.pi / 4, 0.25, 0.7, math.pi / 20, -2, "Monstera", behaviours.FreezeBehaviour, monstera, InteractionClass.EXAMINE, None, "Aah! Monsters! Oh no, wait, autocorrect. Aah! Monstera!", []),
