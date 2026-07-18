@@ -140,7 +140,7 @@ mapDefs1 = {
     15: MapDef(13, False, False, "Jungle plants", InteractionClass.NONE, None, "No way I can get through this thick jungle.", []),
     16: MapDef(14, False, False, "Jungle plants", InteractionClass.NONE, None, "No way I can get through this thick jungle.", []),
     17: MapDef(15, False, False, "Jungle plants", InteractionClass.NONE, None, "No way I can get through this thick jungle.", []),
-    18: MapDef(16, False, True, "Pillow crate", InteractionClass.USE, "open_crate", "Is this crate entirely filled with body pillows?", []),
+    18: MapDef(16, False, True, "Pillow crate", InteractionClass.USE, "open_crate", "Is this crate entirely filled with anime body pillows?", []),
 }
 
 mapDefs2 = {
