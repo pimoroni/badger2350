@@ -14,6 +14,7 @@ builtins = [
     "mat3",
     "pen",
     "pixel_font",
+    "vector_font",
     "vec2",
     "rect",
     "shape",
