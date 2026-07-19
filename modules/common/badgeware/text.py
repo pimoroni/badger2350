@@ -213,7 +213,7 @@ class _text:
                 ox = bounds.x
             min_x = min(min_x, ox)
             max_x = max(max_x, ox + lw)
-            for data, ix, w in litems:
+            for data, ix, _w in litems:
                 px = ox + ix
                 if isinstance(data, str):
                     image.text(data, px, y, size)
