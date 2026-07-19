@@ -38,6 +38,8 @@ builtins = [
     "rom_font",
     "load_font",
     "text",
+    "register_glyph_renderer",
+    "register_sprite",
 
 # filesystem.py
     "file_exists",
