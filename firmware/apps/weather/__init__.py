@@ -104,7 +104,7 @@ def draw():
 
         # draw the temperature text in the centre of the rect
         screen.pen = color.black
-        screen.font = rom_font.nope
+        screen.font = font.nope
         temp_text = f"{temperature}°C"
         tw, _ = screen.measure_text(temp_text)
         tx = temp_win.x + (temp_win.w // 2) - (tw // 2)

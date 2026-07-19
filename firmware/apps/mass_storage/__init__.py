@@ -13,7 +13,7 @@ def show_message():
     screen.pen = color.black
     screen.shape(shape.rectangle(0, 0, screen.width, screen.height))
     try:
-        screen.font = rom_font.absolute
+        screen.font = font.absolute
     except OSError:
         pass
     screen.pen = color.white

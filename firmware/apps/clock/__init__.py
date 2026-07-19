@@ -49,9 +49,9 @@ if state["first_run"]:
     icons = image.load("assets/icons.png").spritesheet(5, 1)
 
 # Loading all the assets.
-textclock_font = rom_font.ziplock
-dots_font = rom_font.futile
-scribble_font = rom_font.ziplock
+textclock_font = font.ziplock
+dots_font = font.futile
+scribble_font = font.ziplock
 
 palette = (color.rgb(44, 44, 44), color.rgb(44, 44, 44, 100), color.white, color.rgb(255, 255, 255, 100))
 

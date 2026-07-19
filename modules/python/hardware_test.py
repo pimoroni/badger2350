@@ -32,7 +32,7 @@ display.speed(2)
 
 WIDTH, HEIGHT = screen.width, screen.height
 
-large_font = rom_font.smart
+large_font = font.smart
 screen.font = large_font
 
 WHITE = color.white

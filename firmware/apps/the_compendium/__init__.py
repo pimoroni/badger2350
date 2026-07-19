@@ -15,7 +15,7 @@ import ui
 
 badge.mode(FAST_UPDATE)
 
-standard_font = pixel_font.load("/system/assets/fonts/sins.ppf")
+standard_font = font.sins
 screen.font = standard_font
 screen.antialias = image.OFF
 

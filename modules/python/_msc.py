@@ -31,8 +31,8 @@ if cached_crc != crc:
 
 rp2.enable_msc()
 
-small_font = rom_font.winds
-large_font = rom_font.nope
+small_font = font.winds
+large_font = font.nope
 
 def activity_leds(_t):
     busy = rp2.is_msc_busy()

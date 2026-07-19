@@ -6,7 +6,7 @@ os.chdir("/system/apps/gallery")
 
 import ui
 
-screen.font = rom_font.nope
+screen.font = font.nope
 
 files = []
 
