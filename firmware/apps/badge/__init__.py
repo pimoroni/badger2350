@@ -38,8 +38,8 @@ rear_view = False
 card_pos = (10, 10)
 pattern = 25
 
-small_font = rom_font.smart
-large_font = rom_font.ignore
+small_font = font.smart
+large_font = font.ignore
 
 
 def center_text(text, y):

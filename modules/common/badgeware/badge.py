@@ -145,10 +145,10 @@ class Badge():
             display.speed((self._current_mode >> 4) & 0xf)
 
         if MODEL == "tufty" or getattr(builtins, "screen", None) is None:
-            font = getattr(getattr(builtins, "screen", None), "font", None)
+            prev_font = getattr(getattr(builtins, "screen", None), "font", None)
             brush = getattr(getattr(builtins, "screen", None), "pen", None)
             builtins.screen = image(display.WIDTH, display.HEIGHT, memoryview(display))
-            screen.font = font if font is not None else rom_font.sins
+            screen.font = prev_font if prev_font is not None else font.sins
             screen.pen = brush if brush is not None else self.default_pen
 
         return None

@@ -170,7 +170,7 @@ def message(title, msg, window=None):
         lines_y += 3
         error_window.line(vec2(window.x, lines_y), vec2(window.w + 10, lines_y))
 
-    error_window.font = rom_font.nope
+    error_window.font = font.nope
     tw, _ = error_window.measure_text(title)
 
     title_pos = vec2((window.x + window.w // 2) - (tw // 2), window.y + 9)
@@ -180,7 +180,7 @@ def message(title, msg, window=None):
     error_window.text(title, title_pos.x, title_pos.y)
 
     error_window.pen = color.black
-    error_window.font = rom_font.winds
+    error_window.font = font.winds
     bounds = error_window.clip
     bounds.y += 43
     bounds.x += 18
@@ -252,7 +252,7 @@ __import__(".frozen/badgeware/memory")
 __import__(".frozen/badgeware/rtc")
 State = __import__(".frozen/badgeware/state").State
 
-DEFAULT_FONT = rom_font.sins
+DEFAULT_FONT = font.sins
 
 badge.mode(LORES | VSYNC)
 badge.default_pen = color.black

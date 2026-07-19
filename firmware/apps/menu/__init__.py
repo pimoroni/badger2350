@@ -9,7 +9,7 @@ import ui
 
 from app import Apps
 
-screen.font = rom_font.nope
+screen.font = font.nope
 
 badge.mode(FAST_UPDATE | NON_BLOCKING)
 
