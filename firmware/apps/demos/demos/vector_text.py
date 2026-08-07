@@ -1,7 +1,7 @@
 import math
 
 skull = image.load("/system/assets/skull.png")
-register_sprite("skull", skull)
+add_sprite("skull", skull)
 mona_sans = font.load("/system/assets/fonts/DynaPuff-Medium.af")
 size = 24
 
@@ -28,9 +28,8 @@ Once I roared with breath and [pen:255,100,80]flame[pen:180,150,120], Now legend
   y = 10
   width = math.sin(badge.ticks / 500) * 40 + 110
   height = screen.height - y - 18  # fit the box on-screen, leaving room for the caption
-  tokens = text.tokenise(screen, message, size=size, glyph_renderers=glyph_renderers)
   bounds = rect(x, y, width, height)
-  text.draw(screen, tokens, bounds, line_spacing=1, word_spacing=1.05, size=size)
+  screen.text(message, bounds, font_size=size, line_height=1, word_spacing=1.05)
 
   screen.pen = color.rgb(60, 80, 100, 100)
   screen.line(bounds.x, bounds.y, bounds.x + bounds.w, bounds.y)
@@ -41,9 +40,9 @@ Once I roared with breath and [pen:255,100,80]flame[pen:180,150,120], Now legend
 
 
 
-# [pen:r,g,b] and [sprite:skull] use the built-in renderers; only the custom
-# [circle] renderer needs registering. A renderer is fn(image, params, measure):
-# it returns its advance width when measuring, else draws at image.cursor.
+# [pen:r,g,b] and [sprite:skull] use the built-in renderers; register a custom
+# [circle] renderer with add_glyph. A renderer is fn(image, params, measure): it
+# returns its advance width when measuring, else draws at image.cursor.
 def circle_glyph_renderer(image, _parameters, measure):
   if measure:
     return 12
@@ -52,6 +51,4 @@ def circle_glyph_renderer(image, _parameters, measure):
   return None
 
 
-glyph_renderers = {
-  "circle": circle_glyph_renderer
-}
+add_glyph("circle", circle_glyph_renderer)

@@ -41,7 +41,7 @@ def render():
         screen.pen = color.black
         screen.clear()
         screen.pen = color.white
-        text.draw(screen, f"{names[selected]}\n{e}", rect(4, 4, screen.width - 8, screen.height - 8))
+        screen.text(f"{names[selected]}\n{e}", rect(4, 4, screen.width - 8, screen.height - 8))
 
     # caption box (name + position), readable over any demo
     label = f"{names[selected]}  {selected + 1}/{len(names)}"

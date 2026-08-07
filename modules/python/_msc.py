@@ -84,9 +84,9 @@ class DiskMode():
         screen.text(title, title_pos.x, title_pos.y)
 
         screen.pen = color.dark_grey
-        text.draw(screen, "1: Your badge is now mounted as a disk", rect(30, 45, 210, 100))
-        text.draw(screen, "2: Copy code onto it to experiment!", rect(30, 85, 210, 100))
-        text.draw(screen, "3: Eject the disk to reboot your badge", rect(30, 125, 210, 100))
+        screen.text("1: Your badge is now mounted as a disk", rect(30, 45, 210, 100))
+        screen.text("2: Copy code onto it to experiment!", rect(30, 85, 210, 100))
+        screen.text("3: Eject the disk to reboot your badge", rect(30, 125, 210, 100))
 
 
 def center_text(text, y):
