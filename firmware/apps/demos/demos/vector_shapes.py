@@ -1,14 +1,18 @@
 import math
 
+DITHER = True
 
-def update():
+
+def update(step):
   screen.antialias = image.X4
 
-  i = math.sin(badge.ticks / 2000) * 0.2 + 0.5
-  f = math.sin(badge.ticks / 1000) * 150
-  t = f + (math.sin(badge.ticks / 500) + 1.0) * 50 + 100
+  phase = step / 4
 
-  stroke = ((math.sin(badge.ticks / 1000) + 1) * 0.05) + 0.1
+  i = math.sin(phase / 4) * 0.2 + 0.5
+  f = math.sin(phase / 2) * 150
+  t = f + (math.sin(phase) + 1.0) * 50 + 100
+
+  stroke = ((math.sin(phase / 2) + 1) * 0.05) + 0.1
 
   shapes = [
     shape.rectangle(-1, -1, 2, 2),
@@ -31,16 +35,14 @@ def update():
     shape.line(-0.75, -0.75, 0.75, 0.75, 0.5).stroke(stroke),
   ]
 
-
-
   for y in range(4):
     for x in range(4):
       i = y * 4 + x
 
-      scale = ((math.sin((badge.ticks + i * 2000) / 1000) + 1) * 3) + 5
+      scale = ((math.sin(phase + i * 2) + 1) * 3) + 5
 
       if i < len(shapes):
-        screen.pen = color.oklch(220, 128, i * 20, 150)
+        screen.pen = color.oklch(130, 128, i * 20, 255)
 
-        shapes[i].transform = mat3().translate(x * 36 + 25, y * 26 + 20).rotate(badge.ticks / 100).scale(scale)
+        shapes[i].transform = mat3().translate(x * 62 + 40, y * 40 + 24).rotate(step * 3).scale(scale)
         screen.shape(shapes[i])

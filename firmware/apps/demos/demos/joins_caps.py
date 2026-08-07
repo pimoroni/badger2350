@@ -1,5 +1,7 @@
 import math
 
+DITHER = True
+
 
 def chevron(cx, cy, s):
   # a sharp down-pointing V; the apex makes the line join obvious
@@ -10,7 +12,7 @@ def chevron(cx, cy, s):
   ]
 
 
-def update():
+def update(step):
   screen.antialias = image.X4
   # stroke ribbons rely on even-odd to leave the band hollow
   screen.fill_rule = image.EVEN_ODD
@@ -20,9 +22,9 @@ def update():
   col = w / 4
   s = w * 0.06
 
-  # animate the thickness so you can watch the miter grow while round/bevel stay
+  # step the thickness so you can watch the miter grow while round/bevel stay
   # bounded, and the caps extend
-  thick = (math.sin(badge.ticks / 600) + 1) * (w * 0.022) + 6
+  thick = (math.sin(step / 3) + 1) * (w * 0.022) + 6
 
   joins = [("miter", shape.JOIN_MITER), ("round", shape.JOIN_ROUND), ("bevel", shape.JOIN_BEVEL)]
   caps = [("butt", shape.CAP_BUTT), ("round", shape.CAP_ROUND), ("square", shape.CAP_SQUARE)]
@@ -34,9 +36,9 @@ def update():
   for i, (name, join) in enumerate(joins):
     cx = col * (i + 1)
     outline = shape.custom(chevron(cx, jy, s)).stroke(thick, shape.ALIGN_CENTER | shape.PATH_OPEN | join)
-    screen.pen = color.rgb(120, 200, 255)
+    screen.pen = color.rgb(120, 120, 120)
     screen.shape(outline)
-    screen.pen = color.rgb(255, 255, 255)
+    screen.pen = color.black
     screen.text(name, cx - 16, jy + s + 10)
 
   # bottom row: same segment, three line caps
@@ -44,9 +46,9 @@ def update():
     cx = col * (i + 1)
     seg = [vec2(cx - s, cy), vec2(cx + s, cy)]
     outline = shape.custom(seg).stroke(thick, shape.ALIGN_CENTER | shape.PATH_OPEN | cap)
-    screen.pen = color.rgb(120, 200, 255)
+    screen.pen = color.rgb(120, 120, 120)
     screen.shape(outline)
-    screen.pen = color.rgb(255, 255, 255)
+    screen.pen = color.black
     screen.text(name, cx - 16, cy + 16)
 
   # restore the default so the setting doesn't leak into other demos

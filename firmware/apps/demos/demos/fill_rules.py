@@ -1,5 +1,7 @@
 import math
 
+DITHER = True
+
 # A unit 5-point star traced as a single self-intersecting path (a pentagram,
 # the {5/2} star polygon): each edge skips a point, so the centre pentagon is
 # enclosed twice. It winds to 2 there -> a hole under the even-odd rule, but
@@ -10,7 +12,7 @@ PENTAGRAM = [
 ]
 
 
-def update():
+def update(step):
   screen.antialias = image.X4
 
   w = screen.width
@@ -25,26 +27,27 @@ def update():
   ]
 
   for label, rule, cx in rules:
-    t = mat3().translate(cx, cy).rotate(badge.ticks / 25).scale(r, r)
+    t = mat3().translate(cx, cy).rotate(step * 12).scale(r, r)
 
-    # filled, using this side's fill rule
+    # filled, using this side's fill rule. A mid tone so the dither leaves a
+    # visible texture against both the white page and the black outline.
     fill = shape.custom(PENTAGRAM)
     fill.transform = t
     screen.fill_rule = rule
-    screen.pen = color.rgb(120, 200, 255)
+    screen.pen = color.rgb(150, 150, 150)
     screen.shape(fill)
 
-    # white outline on top. stroke() works in the shape's *local* units, and the
+    # black outline on top. stroke() works in the shape's *local* units, and the
     # pentagram is unit-sized, so the thickness is tiny (0.04, not e.g. 2 which
     # would be twice the whole shape and blow the miters off-screen). stroke
     # ribbons rely on even-odd to leave the band hollow, so draw with EVEN_ODD.
     outline = shape.custom(PENTAGRAM).stroke(0.1)
     outline.transform = t
     screen.fill_rule = image.EVEN_ODD
-    screen.pen = color.rgb(255, 255, 255)
+    screen.pen = color.black
     screen.shape(outline)
 
-    screen.pen = color.rgb(255, 255, 255)
+    screen.pen = color.black
     screen.text(label, cx - 24, cy + r + 12)
 
   # restore the default so the setting doesn't leak into other demos
