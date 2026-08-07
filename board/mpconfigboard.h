@@ -8,6 +8,16 @@
 #define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_C)
 
 #define MICROPY_GC_NO_SCAN   (1)   // big PSRAM GC win; NO_CLEAR benefit comes with it
+
+// Default is 4 * MP_BYTES_PER_OBJ_WORD, ie. 16 bytes here. Only single-block
+// allocations advance the collector's free-block hint (py/gc.c, n_free == 1), so on a
+// heap this size every multi-block allocation rescans the allocation table: measured at
+// ~31k table bytes per 2-block allocation, and ~10x the cost of a 1-block one. 32 bytes
+// brings rect, 3-element tuples and the 6-float mat3 into a single block. It costs
+// internal fragmentation, which 8MB of PSRAM can afford, and shortens the consecutive
+// run search for large allocations. Unix port: collect pause down a fifth to a quarter.
+#define MICROPY_BYTES_PER_GC_BLOCK (32)
+
 #define MICROPY_HW_VM_IN_RAM (1)   // OPTIONAL: ~+20% interp, costs ~6 KB SRAM (.data)
                                    //  - keep only if the build still links.
 
