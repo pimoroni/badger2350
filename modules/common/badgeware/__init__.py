@@ -198,7 +198,7 @@ def message(title, msg, window=None):
 
     error_window.text("Okay", vec2(window.w - 39, window.h - 14))
 
-    text.draw(error_window, msg, bounds=bounds)
+    error_window.text(msg, bounds)
 
 
 def fatal_error(title, error):
@@ -233,6 +233,16 @@ for k, v in picovector.__dict__.items():
 builtins.OFF = image.OFF
 builtins.X2 = image.X2
 builtins.X4 = image.X4
+
+# Hoist screen.text align/overflow constants
+builtins.LEFT = image.LEFT
+builtins.CENTER = image.CENTER
+builtins.RIGHT = image.RIGHT
+builtins.TOP = image.TOP
+builtins.MIDDLE = image.MIDDLE
+builtins.BOTTOM = image.BOTTOM
+builtins.CLIP = image.CLIP
+builtins.ELLIPSES = image.ELLIPSES
 
 # Hoist display and run for clean Thonny apps
 builtins.display = display

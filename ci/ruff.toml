@@ -19,6 +19,15 @@ builtins = [
     "rect",
     "shape",
     "screen",
+# image text align / overflow constants (hoisted in badgeware.py)
+    "LEFT",
+    "CENTER",
+    "RIGHT",
+    "TOP",
+    "MIDDLE",
+    "BOTTOM",
+    "CLIP",
+    "ELLIPSES",
 
 # badgeware.py
     "display",
@@ -35,11 +44,9 @@ builtins = [
     "frnd",
 
 # text.py
-    "rom_font",
-    "load_font",
     "text",
-    "register_glyph_renderer",
-    "register_sprite",
+    "add_glyph",
+    "add_sprite",
 
 # filesystem.py
     "file_exists",
