@@ -71,7 +71,7 @@ class Apps:
             name = " ".join([capitalize(word) for word in path.split("_")])
 
             if is_dir(f"{root}/{path}"):
-                if file_exists(f"{root}/{path}/__init__.py") and path != "menu":
+                if path != "menu" and (file_exists(f"{root}/{path}/__init__.py") or file_exists(f"{root}/{path}/__init__.mpy")):
                     icon = image.load(f"{root}/{path}/icon.png") if file_exists(f"{root}/{path}/icon.png") else DEFAULT_ICON
                     App(self.apps, name, path, icon)
 
