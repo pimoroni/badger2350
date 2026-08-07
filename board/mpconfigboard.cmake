@@ -19,7 +19,15 @@ endif()
 
 add_compile_options(-fno-math-errno)   # hardware VSQRT on the M33 FPU (safe: MP math uses isnan/isinf, not errno)
 
-set(MICROPY_C_HEAP_SIZE 4096)
+# The C heap runs from __bss_end__ to __bss_end__ + this, and the only thing in
+# it is libstdc++'s emergency exception pool, allocated before main() by a static
+# constructor in eh_alloc.o. That wants 1088 bytes, but newlib's malloc then pads
+# the break up to the next 4K page - so one page of heap only fits when
+# __bss_end__ happens to land in the first ~2984 bytes of a page, and the board
+# panics out of memory before USB comes up when it doesn't. Two pages fit
+# whatever the alignment. The spare is not otherwise spent: the MicroPython heap
+# is in PSRAM.
+set(MICROPY_C_HEAP_SIZE 8192)
 
 # Enable PSRAM, should pick up CS and size from
 # the board header file.
