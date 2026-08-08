@@ -35,6 +35,8 @@ SENSE_1V1 = machine.ADC(machine.Pin.board.SENSE_1V1)
 BAT_MAX = 4.10
 BAT_MIN = 3.00
 
+TEXT_START = vec2(0, 0)
+
 conversion_factor = 3.3 / 65536
 
 if MODEL == "tufty":
@@ -104,6 +106,7 @@ class Badge():
             screen.pen = self.default_clear
             screen.clear()
         screen.pen = self.default_pen
+        screen.cursor = TEXT_START
         return True
 
     def update(self):
