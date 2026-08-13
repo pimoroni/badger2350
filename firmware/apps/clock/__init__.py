@@ -427,7 +427,7 @@ def draw_text_clock(currenttime):
     # First of all we're making a list of lists containing all of the words that are
     # going on the screen.
     words = [["it", "is", "about", "half", "twenty"],
-             ["quarter", "ten\n", "five\n", "past", "to"],
+             ["quarter", "ten_", "five_", "past", "to"],
              ["one", "two", "three", "four", "five"],
              ["six", "seven", "eight", "nine", "ten"],
              ["eleven", "twelve", "o'clock", "on"],
@@ -448,16 +448,15 @@ def draw_text_clock(currenttime):
 
     # Depending on that, we just do a bunch of checks to decide which words
     # to put into which variables.
-    # The newlines on the "five\n" and "ten\n" don't do anything or change
-    # the way the string is displayed, but it makes it a different string
-    # from the "hour" five and ten later on so they don't get mixed up.
+    # The '_' on the "five_" and "ten_" are there to differentiate the minutes
+    # from the hour number. The underscore is stripped before being displayed.
     # If something needs to be lit we just add it to displayed_time.
     if minutes == 0 or minutes == 12:
         displayed_time.append("o'clock")
     if minutes == 1 or minutes == 11 or minutes == 5 or minutes == 7:
-        displayed_time.append("five\n")
+        displayed_time.append("five_")
     if minutes == 2 or minutes == 10:
-        displayed_time.append("ten\n")
+        displayed_time.append("ten_")
     if minutes == 3 or minutes == 9:
         displayed_time.append("quarter")
     if minutes == 4 or minutes == 8 or minutes == 5 or minutes == 7:
@@ -540,20 +539,21 @@ def draw_text_clock(currenttime):
     # After each word we move the x drawing position along by the word's width, plus a spacing
     # calculated by measuring all the words together, subtracting that from the screen width
     # and dividing the result by the number of words so that they're evenly spaced.
+    # We NEED to remoive any "_" of the string before calculating and displaying.
     for line in words:
         spaces = len(line) - 1
-        textwidth = screen.measure_text("".join(line))
+        textwidth = screen.measure_text("".join(line).replace("_", ""))
         x_spacing = (screen.width - (2 * border) - textwidth[0]) / spaces
 
         x = border
         for word in line:
             if word in displayed_time:
                 screen.pen = drawing_brush
-                displayed_time.remove(word)
             else:
                 screen.pen = faded_brush
-            screen.text(word, x, y)
-            x += screen.measure_text(word)[0]
+            displayed_word = word.replace("_", "")
+            screen.text(displayed_word, x, y)
+            x += screen.measure_text(displayed_word)[0]
             x += round(x_spacing)
 
         y += line_height[1] + y_spacing
