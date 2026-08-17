@@ -11,7 +11,7 @@ target_include_directories(usermod_sleep INTERFACE
     ${PICOVECTOR_DIR}   # picovector_working_buffer.h — the shared scratch pool reused as the parser arena
 )
 
-target_link_libraries(usermod_sleep INTERFACE hardware_powman hardware_gpio)
+target_link_libraries(usermod_sleep INTERFACE hardware_powman hardware_gpio hardware_psram)
 
 target_link_libraries(usermod INTERFACE usermod_sleep)
 
