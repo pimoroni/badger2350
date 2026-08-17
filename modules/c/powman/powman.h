@@ -19,6 +19,7 @@
 #include "hardware/i2c.h"
 #include "hardware/resets.h"
 #include "hardware/pwm.h"
+#include "hardware/psram.h"
 
 // For machine_pin_find
 #include "machine_pin.h"

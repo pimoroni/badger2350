@@ -120,10 +120,21 @@ void pcf85063_wakeup_init(uint8_t period) {
 void powman_init() {
     uint64_t abs_time_ms = 1746057600000; // 2025/05/01 - Milliseconds since epoch
 
+    // Never restored: PSRAM holds the MicroPython heap and is unmapped below, so no
+    // handler may run between here and the core powering off.
+    save_and_disable_interrupts();
+
     clear_double_tap_flag();
 
     // Run everything from pll_usb pll and stop pll_sys
     set_sys_clock_48mhz();
+
+    // QMI_M1_TIMING.MAX_SELECT bounds PSRAM CS-low in clk_sys cycles, so the drop above
+    // stretches it past the 8us the part allows. Re-derive it as machine.freq() does.
+    if (psram_is_available()) {
+        psram_configure_params(PICO_DEFAULT_PSRAM_MAX_FREQ, PICO_DEFAULT_PSRAM_MAX_SELECT, PICO_DEFAULT_PSRAM_MIN_DESELECT);
+        psram_reinitialize();
+    }
 
     // Set up GPIO for optimum power consumption
     for (int i = 0; i < NUM_BANK0_GPIOS; ++i) {
