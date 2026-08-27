@@ -55,8 +55,8 @@ target_compile_definitions(usermod_sleep INTERFACE BADGER=1)
 # C++ Magic Memory
 include(cppmem/micropython)
 
-# Disable build-busting C++ exceptions
-include(micropython-disable-exceptions)
+# Drop the C++ demangler from the uncaught-exception path
+include(cxx_terminate/micropython)
 
 # Must call `enable_ulab()` to enable
 include(micropython-common-ulab)
