@@ -36,8 +36,6 @@ include(pimoroni_i2c/micropython)
 # Badger display driver
 include(modules/c/ssd1680/micropython)
 
-# QR Code Module
-include(qrcode/micropython/micropython)
 
 # Sensors & Breakouts
 include(micropython-common-breakouts)
