@@ -229,6 +229,12 @@ bool __no_inline_not_in_flash_func(psram_cs1_pullup_check)(void) {
     bool pin_state = gpio_get(BW_PSRAM_CS) == 1;    // Check if pin is strongly pulled up
     gpio_set_pulls(BW_PSRAM_CS, false, false);      // Disable pulls
     gpio_set_function(BW_PSRAM_CS, GPIO_FUNC_XIP_CS1);  // Return the CS pin to the correct function
+
+    if (psram_is_available()) {
+        psram_configure_params(PICO_DEFAULT_PSRAM_MAX_FREQ, PICO_DEFAULT_PSRAM_MAX_SELECT, PICO_DEFAULT_PSRAM_MIN_DESELECT);
+        psram_reinitialize();
+    }
+
     restore_interrupts(intr_stash);
     return pin_state;
 }
