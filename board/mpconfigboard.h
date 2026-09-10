@@ -47,6 +47,8 @@ int mp_hal_is_pin_reserved(int n);
 
 #define MICROPY_PY_THREAD                       (0)
 
+#define MICROPY_PY_DEFLATE_COMPRESS             (1)
+
 // Configure USB
 #define MICROPY_HW_USB_VID                      (0x2e8a)
 #define MICROPY_HW_USB_PID                      (0x1100)
