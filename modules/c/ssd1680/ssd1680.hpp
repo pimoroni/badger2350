@@ -35,7 +35,6 @@ namespace pimoroni {
     const uint BUSY   = 16;
     const uint RESET  = 21;
 
-    uint8_t lut_repeat_count = 1; // Default to 1 for a ghost-free but slightly slower refresh
     bool inverted = true; // Makes 0 black and 1 white, as is foretold.
     bool blocking = true;
 

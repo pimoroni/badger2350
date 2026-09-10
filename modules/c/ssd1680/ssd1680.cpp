@@ -73,8 +73,7 @@ namespace pimoroni {
   }
 
   bool SSD1680::set_update_speed(int update_speed) {
-    // 0 == slow (lut_repeat_count of 3), 3 == fast (lut_repeat_count of 0)
-    this->lut_repeat_count = (uint8_t)3 - (uint8_t)(update_speed & 3);
+    (void)update_speed;
     return true;
   }
 
@@ -90,9 +89,9 @@ namespace pimoroni {
     });
 //    Phase:
 //        L0    L1    L2    L3    L4    SR?             Repeat
-    data({0x02, 0x00, 0x00, 0x05, 0x0A, 0x00}); data(1, &this->lut_repeat_count); // Group0
-    data({0x19, 0x19, 0x00, 0x02, 0x00, 0x00}); data(1, &this->lut_repeat_count); // Group1
-    data({0x05, 0x0A, 0x00, 0x00, 0x00, 0x00}); data(1, &this->lut_repeat_count); // Group2
+    data({0x02, 0x00, 0x00, 0x05, 0x0A, 0x00, 0x00}); // Group0
+    data({0x19, 0x19, 0x00, 0x02, 0x00, 0x00, 0x00}); // Group1
+    data({0x05, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00}); // Group2
 
     // Remaining unused LUTs and config values
     data({
