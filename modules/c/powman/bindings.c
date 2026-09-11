@@ -135,11 +135,9 @@ mp_obj_t _sleep_sleep(size_t n_args, const mp_obj_t *args) {
 
     // power off
     if (timeout_ms > 0) {
-        absolute_time_t timeout = make_timeout_time_ms(timeout_ms);
-        err = powman_off_until_time(timeout);
-    } else {
-        err = powman_off();
+        powman_enable_alarm_wakeup_at_ms(powman_timer_get_ms() + timeout_ms);
     }
+    err = powman_off();
     hard_assert(err == PICO_OK);
     hard_assert(false); // should never get here!
 
