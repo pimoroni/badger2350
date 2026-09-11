@@ -118,7 +118,7 @@ void pcf85063_wakeup_init(uint8_t period) {
 }
 
 void powman_init() {
-    uint64_t abs_time_ms = 1746057600000; // 2025/05/01 - Milliseconds since epoch
+    uint64_t min_time_ms = 1746057600000; // 2025/05/01 - Milliseconds since epoch
 
     // Never restored: PSRAM holds the MicroPython heap and is unmapped below, so no
     // handler may run between here and the core powering off.
@@ -203,9 +203,11 @@ void powman_init() {
         USB_USBPHY_DIRECT_OVERRIDE_DM_PULLDN_EN_OVERRIDE_EN_BITS | USB_USBPHY_DIRECT_OVERRIDE_DP_PULLDN_EN_OVERRIDE_EN_BITS | USB_USBPHY_DIRECT_OVERRIDE_DP_PULLUP_EN_OVERRIDE_EN_BITS |
         USB_USBPHY_DIRECT_OVERRIDE_DM_PULLUP_HISEL_OVERRIDE_EN_BITS | USB_USBPHY_DIRECT_OVERRIDE_DP_PULLUP_HISEL_OVERRIDE_EN_BITS;
 
-    // start powman and set the time
+    // start powman, keeping any time already set by NTP or the host
     powman_timer_start();
-    powman_timer_set_ms(abs_time_ms);
+    if (powman_timer_get_ms() < min_time_ms) {
+        powman_timer_set_ms(min_time_ms);
+    }
 
     // Allow power down when debugger connected
     powman_set_debug_power_request_ignored(true);
