@@ -20,6 +20,7 @@
 #include "hardware/resets.h"
 #include "hardware/pwm.h"
 #include "hardware/psram.h"
+#include "hardware/xip_cache.h"
 
 // For machine_pin_find
 #include "machine_pin.h"
