@@ -276,7 +276,7 @@ int powman_setup_gpio_wakeup(int hw_wakeup, int gpio, bool edge, bool high, uint
     absolute_time_t timeout = make_timeout_time_ms(timeout_ms);
     if (gpio_get(gpio) == high) {
         while(gpio_get(gpio) == high) {
-            sleep_ms(10);
+            busy_wait_ms(10);
             if(time_reached(timeout)) return -1;
         }
     }
