@@ -2,11 +2,9 @@ import network
 from machine import Pin, Timer, ADC, I2C
 import time
 from pcf85063a import PCF85063A
-import badgeware #noqa F401
 import powman
 import os
 import gc
-import ssd1680
 
 """
 
@@ -27,8 +25,8 @@ E18 - PSRAM Test Failure
 
 """
 
-display = ssd1680.SSD1680()
-display.speed(2)
+badge.mode(LORES | MEDIUM_UPDATE)
+badge.caselights(0)
 
 WIDTH, HEIGHT = screen.width, screen.height
 
@@ -38,9 +36,6 @@ screen.font = large_font
 WHITE = color.white
 BLACK = color.black
 GRAY = color.dark_grey
-
-CL = [Pin(0, Pin.OUT), Pin(1, Pin.OUT),
-      Pin(2, Pin.OUT), Pin(3, Pin.OUT)]
 
 charge_stat = Pin.board.CHARGE_STAT
 charge_stat.init(mode=Pin.IN)
@@ -58,11 +53,6 @@ home = Pin.board.BUTTON_HOME
 power = Pin.board.POWER_EN
 
 
-def centre_text(text, y):
-    tx = (WIDTH // 2) - (screen.measure_text(text)[0] / 2)
-    screen.text(text, tx, y)
-
-
 class Tests:
     def __init__(self):
 
@@ -70,6 +60,7 @@ class Tests:
         self.buttons_pass = False
         self.vbus_pass = False
         self.rtc_pass = None
+        self.cl_state = 0
 
         self.wlan = network.WLAN(network.WLAN.IF_STA)
         self.wlan.active(True)
@@ -115,7 +106,7 @@ class Tests:
         screen.pen = WHITE
         screen.clear()
         screen.pen = BLACK
-        centre_text(str(error), (HEIGHT / 2) - 10)
+        screen.text(str(error), rect(0, 0, WIDTH, HEIGHT), align=(CENTER, MIDDLE))
         display.update()
 
     def test_buttons(self):
@@ -147,8 +138,8 @@ class Tests:
 
     # Toggle the case lights on the back of the badge
     def cl_toggle(self):
-        for led in CL:
-            led.toggle()
+        self.cl_state = 0 if self.cl_state else 1
+        badge.caselights(self.cl_state)
 
     def clear_flag(self):
         # Now the test has complete, we can remove the flag.
@@ -156,15 +147,6 @@ class Tests:
             os.remove("hardware_test.txt")
         except OSError:
             pass
-
-    # Handle the user exiting the test
-    # This is only enabled once the function tests have passed
-    def exit_handler(self, _pin):
-        # The test has passed so we can clear the flag.
-        self.clear_flag()
-
-        # Time to sleep now!
-        powman.sleep()
 
     def run(self):
 
@@ -224,24 +206,25 @@ class Tests:
             self.display_error(e)
             powman.sleep()
 
-        b.irq(self.exit_handler)
-
         # The test has passed now
         screen.pen = WHITE
         screen.clear()
         screen.pen = BLACK
-        centre_text("PASS", 50)
-        centre_text("Press B to sleep.", 80)
+        screen.text("PASS", rect(0, 50, WIDTH, 30), align=(CENTER, TOP))
+        screen.text("Press B to sleep.", rect(0, 80, WIDTH, 30), align=(CENTER, TOP))
         display.update()
 
         # We want to make sure the case LEDs are on
         # so the user can easily tell that the unit has entered sleep mode
-        for led in CL:
-            led.on()
+        badge.caselights(1)
 
         # Waiting here now for the user to press the B button
         while True:
-            pass
+            badge.poll()
+
+            if badge.pressed(BUTTON_B):
+                self.clear_flag()
+                powman.shipping_mode()
 
     # Interrupt based button testing checks the button gpio
     # and that each button is able to trigger sw_int
@@ -275,15 +258,18 @@ class Tests:
         screen.pen = WHITE
         screen.clear()
         screen.pen = BLACK
-        screen.text("< Remove USB to continue", 5, 80)
+        screen.text("< Remove USB to continue", rect(5, 80, WIDTH - 10, HEIGHT - 85))
         display.update()
 
         start_time = time.time()
+        last_toggle = time.ticks_ms()
         while True:
             # Time out to catch the user not removing the USB
             # Or to end the test if there's a failure on VBUS_DETECT
             if time.time() - start_time < 5:
-                self.cl_toggle()
+                if time.ticks_diff(time.ticks_ms(), last_toggle) >= 250:
+                    last_toggle = time.ticks_ms()
+                    self.cl_toggle()
                 # We're checking status of the USB connection here.
                 # If it changes we're going to assume the user removed it.
                 if vbus_detect.value() == 0:
@@ -299,7 +285,7 @@ class Tests:
         screen.clear()
         screen.pen = BLACK
 
-        centre_text("Press all face buttons + HOME", 80)
+        screen.text("Press all face buttons + HOME", rect(5, 80, WIDTH - 10, HEIGHT - 85), align=(CENTER, TOP))
 
         # Draw button presses
         screen.pen = GRAY
