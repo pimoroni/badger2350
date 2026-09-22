@@ -61,7 +61,7 @@
 #define PLL_SYS_POSTDIV1 (6)
 #define PLL_SYS_POSTDIV2 (1)
 #define SYS_CLK_HZ       (250000000)
-#define BW_VREG_VOLTAGE  (0b01101)  // 1.20V
+#define SYS_CLK_VREG_VOLTAGE_MIN VREG_VOLTAGE_1_20
 
 // 200 MHz - Most of our testing was done at 200MHz.
 // ./build/micropython/lib/pico-sdk/src/rp2_common/hardware_clocks/scripts/vcocalc.py --cmake 200
@@ -71,8 +71,10 @@
 #define PLL_SYS_POSTDIV1 (6)
 #define PLL_SYS_POSTDIV2 (1)
 #define SYS_CLK_HZ       (200000000)
-#define BW_VREG_VOLTAGE  (0b01011)  // 1.10V
+#define SYS_CLK_VREG_VOLTAGE_MIN VREG_VOLTAGE_1_10
 */
+
+#define SYS_CLK_VREG_VOLTAGE_AUTO_ADJUST 1
 
 // The cyw43 SPI PIO clock is clk_sys / CYW43_PIO_CLOCK_DIV_INT (a fixed divider).
 // The SDK default (2) gives 125MHz at our 250MHz clock, which is too fast for the
