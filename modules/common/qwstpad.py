@@ -1,6 +1,7 @@
 import struct
 from collections import OrderedDict
 
+from machine import I2C
 from micropython import const
 
 __version__ = "0.0.1"
@@ -14,6 +15,9 @@ ALT_ADDRESS_1 = const(0x23)
 ALT_ADDRESS_2 = const(0x25)
 ALT_ADDRESS_3 = const(0x27)
 ADDRESSES = (DEFAULT_ADDRESS, ALT_ADDRESS_1, ALT_ADDRESS_2, ALT_ADDRESS_3)
+
+# TCA9555 pin directions: LEDs on 6, 7, 9 and 10 are outputs, the rest inputs
+CONFIGURATION = const(0b11111001_00111111)
 
 
 class QwSTPad:
@@ -34,31 +38,52 @@ class QwSTPad:
                                   })
     LED_MAPPING = (0x6, 0x7, 0x9, 0xA)
 
-    def __init__(self, i2c, address=DEFAULT_ADDRESS, show_address=True):
+    # Every pin in BUTTON_MAPPING
+    BUTTON_MASK = const(0b11111000_00111110)
+
+    def __init__(self, i2c=None, address=DEFAULT_ADDRESS, show_address=True):
         if address not in ADDRESSES:
             raise ValueError("address is not valid. Expected: 0x21, 0x23, 0x25, or 0x27")
 
-        self.__i2c = i2c
+        self.__i2c = i2c if i2c is not None else I2C(0)
         self.__address = address
-
-        # Set up the TCA9555 with the correct input and output pins
-        self.__reg_write_uint16(self.__i2c, self.__address, self.CONFIGURATION_PORT0, 0b11111001_00111111)
-        self.__reg_write_uint16(self.__i2c, self.__address, self.POLARITY_PORT0, 0b11111000_00111111)
-        self.__reg_write_uint16(self.__i2c, self.__address, self.OUTPUT_PORT0, 0b00000110_11000000)
 
         self.__button_states = OrderedDict({})
         for key, _ in self.BUTTON_MAPPING.items():
             self.__button_states[key] = False
 
+        self.__read_buffer = bytearray(2)
+
         self.__led_states = 0b0000
+        self.setup()
+
         if show_address:
             self.set_leds(self.address_code())
+
+    def setup(self):
+        # Set up the TCA9555 with the correct input and output pins. Polarity is left
+        # at its power-on default and the buttons are inverted in read_mask(), so a
+        # pad that loses power and comes back still reads correctly.
+        self.__reg_write_uint16(self.__i2c, self.__address, self.CONFIGURATION_PORT0, CONFIGURATION)
+        self.__reg_write_uint16(self.__i2c, self.__address, self.POLARITY_PORT0, 0x0000)
+        self.__update_leds()
+
+    def check(self):
+        # A pad that has lost power comes back with every pin as an input
+        return self.__reg_read_uint16(self.__i2c, self.__address, self.CONFIGURATION_PORT0) == CONFIGURATION
 
     def address_code(self):
         return self.__change_bit(0x0000, ADDRESSES.index(self.__address), True)
 
+    def read_mask(self):
+        # Buttons are active low, so a set bit in the result is a pressed button.
+        # Read into a reused buffer, as this is called every frame.
+        buffer = self.__read_buffer
+        self.__i2c.readfrom_mem_into(self.__address, self.INPUT_PORT0, buffer)
+        return ~(buffer[0] | buffer[1] << 8) & self.BUTTON_MASK
+
     def read_buttons(self):
-        state = self.__reg_read_uint16(self.__i2c, self.__address, self.INPUT_PORT0)
+        state = self.read_mask()
         for key, value in self.BUTTON_MAPPING.items():
             self.__button_states[key] = self.__get_bit(state, value)
         return self.__button_states
