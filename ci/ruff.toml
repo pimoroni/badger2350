@@ -73,7 +73,17 @@ builtins = [
     "BUTTON_C",
     "BUTTON_UP",
     "BUTTON_DOWN",
-    "BUTTON_HOME"
+    "BUTTON_HOME",
+    "PAD_UP",
+    "PAD_DOWN",
+    "PAD_LEFT",
+    "PAD_RIGHT",
+    "PAD_A",
+    "PAD_B",
+    "PAD_X",
+    "PAD_Y",
+    "PAD_PLUS",
+    "PAD_MINUS"
 ]
 
 # Include:

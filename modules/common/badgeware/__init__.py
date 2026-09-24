@@ -19,7 +19,7 @@ def reset():
     # HOME is also BOOT; if we reset while it's
     # low we'll end up in bootloader mode.
     badge.poll()
-    while badge.pressed() or badge.held():
+    while badge.buttons.pressed() or badge.buttons.held():
         badge.poll()
     machine.reset()
 
@@ -71,8 +71,11 @@ def wait_for_button_or_alarm(timeout=30_000):
             break
         if rtc.alarm_status():
             break
+        # a connected pad keeps the unit awake, and restarts the timeout when unplugged
+        if badge.pad_connected():
+            t_start = time.ticks_ms()
         # put the unit to sleep if button input times out and the unit is not connected via USB
-        if timeout is not None and time.ticks_diff(time.ticks_ms(), t_start) > timeout and not badge.usb_connected():
+        elif timeout is not None and time.ticks_diff(time.ticks_ms(), t_start) > timeout and not badge.usb_connected():
             badge.sleep()
 
 
