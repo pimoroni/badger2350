@@ -2,6 +2,7 @@ import struct
 from collections import OrderedDict
 
 from micropython import const
+from machine import I2C
 
 __version__ = "0.0.1"
 
@@ -14,6 +15,8 @@ ALT_ADDRESS_1 = const(0x23)
 ALT_ADDRESS_2 = const(0x25)
 ALT_ADDRESS_3 = const(0x27)
 ADDRESSES = (DEFAULT_ADDRESS, ALT_ADDRESS_1, ALT_ADDRESS_2, ALT_ADDRESS_3)
+I2C_PINS = {"id": 0, "sda": 4, "scl": 5}    # The I2C pins the QwSTPad is connected to
+i2c = I2C(**I2C_PINS)                           # The I2C instance to pass to all QwSTPads
 
 
 class QwSTPad:
@@ -53,6 +56,13 @@ class QwSTPad:
         self.__led_states = 0b0000
         if show_address:
             self.set_leds(self.address_code())
+
+        self.buttons = self.read_buttons()
+        self.__pressed = {}
+        self.__released = {}
+        self.__changed = {}
+        self.__held = {}
+        self.update_buttons()
 
     def address_code(self):
         return self.__change_bit(0x0000, ADDRESSES.index(self.__address), True)
@@ -97,3 +107,74 @@ class QwSTPad:
     def __reg_read_uint16(self, i2c, address, reg):
         buffer = i2c.readfrom_mem(address, reg, 2)
         return struct.unpack("<H", buffer)[0]
+
+    def update_buttons(self):
+        old_values = {}
+        for key, value in self.buttons.items():
+            old_values[key] = value
+
+        self.buttons = self.read_buttons()
+
+        for key, value in self.buttons.items():
+            if not old_values[key] and not value:
+                self.__pressed[key] = False
+                self.__released[key] = False
+                self.__changed[key] = False
+                self.__held[key] = False
+            if not old_values[key] and value:
+                self.__pressed[key] = True
+                self.__released[key] = False
+                self.__changed[key] = True
+                self.__held[key] = True
+            if old_values[key] and not value:
+                self.__pressed[key] = False
+                self.__released[key] = True
+                self.__changed[key] = True
+                self.__held[key] = False
+            if old_values[key] and value:
+                self.__pressed[key] = False
+                self.__released[key] = False
+                self.__changed[key] = False
+                self.__held[key] = True
+
+    def pressed(self, button=None):
+        if button is None:
+            return True in self.__pressed.values()
+        return self.__pressed[button]
+
+    def released(self, button=None):
+        if button is None:
+            return True in self.__released.values()
+        return self.__released[button]
+
+    def changed(self, button=None):
+        if button is None:
+            return True in self.__changed.values()
+        return self.__changed[button]
+
+    def held(self, button=None):
+        if button is None:
+            return True in self.__held.values()
+        return self.__held[button]
+
+
+class Gamepadhelper:
+    def __init__(self):
+        self.pads = []
+        self.pads_count = 0
+        self.get_gamepads()
+
+    def get_gamepads(self):
+        pads_count = 0
+
+        # Create a player for each connected QwSTPad
+        for i in range(len(ADDRESSES)):
+            try:
+                self.pads.append(QwSTPad(i2c, ADDRESSES[i]))
+                print(f"P{i + 1}: Connected")
+                pads_count += 1
+            except OSError:
+                self.pads.append(None)
+                print(f"P{i + 1}: Not Connected")
+
+        self.pads_count = pads_count
