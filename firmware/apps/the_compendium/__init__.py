@@ -1,11 +1,7 @@
 import math
-import os
 import random
-import sys
 
 
-sys.path.insert(0, "/apps/the_compendium")
-os.chdir("/apps/the_compendium")
 import cutscene
 import dialogue
 import level

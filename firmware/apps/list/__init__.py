@@ -1,9 +1,3 @@
-import os
-import sys
-
-sys.path.insert(0, "/apps/list")
-os.chdir("/apps/list")
-
 import binascii
 
 # **** Put your list title here *****

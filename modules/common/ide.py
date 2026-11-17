@@ -290,7 +290,7 @@ def execute(path, debug=False):
         if _is_dir(path):
             launch(path)
         else:
-            os.chdir(path.rsplit("/", 1)[0] or "/")
+            os.chdir("/" if path.startswith("/.ide/") else path.rsplit("/", 1)[0] or "/")
             _run_file(path)
     except badgeware.IDEStop:
         pass

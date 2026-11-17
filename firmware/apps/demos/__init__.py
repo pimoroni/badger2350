@@ -4,13 +4,10 @@
 # no animation loop, so the step counter stands in for elapsed time.
 
 import gc
-import os
 import sys
 
 APP_DIR = "/apps/demos"
 
-sys.path.insert(0, APP_DIR)
-os.chdir(APP_DIR)
 
 from demos import demos
 names = sorted(demos.keys())

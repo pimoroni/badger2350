@@ -1,10 +1,3 @@
-import sys
-import os
-
-sys.path.insert(0, "/apps/badge")
-os.chdir("/apps/badge")
-
-
 CX = screen.width / 2
 CY = screen.height / 2
 

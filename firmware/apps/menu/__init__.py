@@ -1,9 +1,6 @@
-import os
 import sys
 
-sys.path.insert(0, "/apps/menu")
 sys.path.insert(0, "/")
-os.chdir("/apps/menu")
 
 import ui
 

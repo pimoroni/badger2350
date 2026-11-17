@@ -1,8 +1,5 @@
 import os
-import sys
 
-sys.path.insert(0, "/apps/gallery")
-os.chdir("/apps/gallery")
 
 import ui
 

@@ -1,17 +1,13 @@
 # This example grabs current weather details from Open Meteo and displays them on Badger 2350.
 # Find out more about the Open Meteo API at https://open-meteo.com
 
-import os
 import secrets
-import sys
 
 import urequests
 import wifi
 
 secrets.require("LAT", "LON")
 
-sys.path.insert(0, "/apps/weather")
-os.chdir("/apps/weather")
 
 import ui
 
