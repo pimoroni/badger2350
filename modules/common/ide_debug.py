@@ -17,6 +17,7 @@ _refs = []
 _stopped_frames = []
 _resume = False
 _initialised = False
+_current_frame = None
 
 
 def _send(message):
@@ -100,6 +101,20 @@ def _globals(frame):
     return variables
 
 
+def _send_screen(request_id):
+    width, height, stride = screen.width, screen.height, screen.stride
+    raw = memoryview(screen.raw)
+    row_bytes = width * 4
+    if stride != row_bytes:
+        packed = bytearray(row_bytes * height)
+        for y in range(height):
+            packed[y * row_bytes:(y + 1) * row_bytes] = raw[y * stride:y * stride + row_bytes]
+        raw = memoryview(packed)
+    raw = raw[:row_bytes * height]
+    _send({"event": "screen", "id": request_id, "width": width, "height": height, "bytes": len(raw)})
+    cdcaux.write(raw)
+
+
 def _handle(command):
     global _mode, _step_frame, _resume, _initialised
     name = command.get("cmd")
@@ -138,8 +153,11 @@ def _handle(command):
         children = _children(_refs[ref - 1]) if 0 < ref <= len(_refs) else []
         _send({"event": "children", "id": command.get("id"), "ref": ref, "children": children})
 
+    elif name == "screen":
+        _send_screen(command.get("id"))
+
     elif name == "eval":
-        frame = _stopped_frames[command.get("frame", 0)] if _stopped_frames else None
+        frame = _stopped_frames[command.get("frame", 0)] if _stopped_frames else _current_frame
         scope = frame.f_globals if frame else {}
         local_scope = frame.f_locals if frame and frame.f_code.co_name != "<module>" else scope
         expression = command.get("expr", "")
@@ -203,9 +221,11 @@ def _should_stop(frame):
 
 
 def _trace_local(frame, event, _arg):
-    global _mode
+    global _mode, _current_frame
     if event == "line":
+        _current_frame = frame
         _poll()
+        _current_frame = None
         reason = _should_stop(frame)
         if reason:
             _stop(frame, reason)
@@ -218,12 +238,9 @@ def _trace_local(frame, event, _arg):
 def _trace(frame, event, _arg):
     if event != "call":
         return None
-    _poll()
     if not _is_user_file(_frame_file(frame)):
         return None
-    if _mode != "run" or _frame_file(frame) in _breakpoints:
-        return _trace_local
-    return None
+    return _trace_local
 
 
 def start():
@@ -245,6 +262,8 @@ def start():
 
 
 def stop():
+    global _current_frame
     sys.settrace(None)
+    _current_frame = None
     _send({"event": "terminated"})
     cdcaux.claim(False)

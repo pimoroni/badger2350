@@ -81,7 +81,10 @@ static mp_obj_t cdcaux_write(mp_obj_t data_in) {
     size_t written = 0;
     mp_uint_t last_write = mp_hal_ticks_ms();
     while (written < bufinfo.len && tud_cdc_n_connected(CDCAUX_ITF)) {
-        uint32_t n = tud_cdc_n_write(CDCAUX_ITF, data + written, bufinfo.len - written);
+        uint32_t n = MIN(bufinfo.len - written, tud_cdc_n_write_available(CDCAUX_ITF));
+        if (n > 0) {
+            n = tud_cdc_n_write(CDCAUX_ITF, data + written, n);
+        }
         tud_cdc_n_write_flush(CDCAUX_ITF);
         written += n;
         if (n > 0) {
