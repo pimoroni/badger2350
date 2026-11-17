@@ -8,7 +8,7 @@ message("dir2uf2/py_decl: Using Python ${Python_EXECUTABLE}")
 
 # Convert supplies paths to absolute, for a quieter life
 get_filename_component(PIMORONI_ROMFS_DIR ${PIMORONI_ROMFS_DIR} REALPATH)
-get_filename_component(PIMORONI_FATFS_DIR ${PIMORONI_FATFS_DIR} REALPATH)
+get_filename_component(PIMORONI_LFS_DIR ${PIMORONI_LFS_DIR} REALPATH)
 
 if (EXISTS "${PIMORONI_TOOLS_DIR}/py_decl/py_decl.py")
     add_custom_target("${MICROPY_TARGET}-verify" ALL
@@ -16,24 +16,6 @@ if (EXISTS "${PIMORONI_TOOLS_DIR}/py_decl/py_decl.py")
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "pydecl: Verifying ${MICROPY_TARGET}.uf2"
         DEPENDS ${MICROPY_TARGET}
-    )
-endif()
-
-# 4096 sectors (16MB) total
-# 512 sectors (2MB) allocated for MicroPython firmware
-# 256 sectors (1MB) allocated for ROMFS
-# 3072 sectors (12MB) for user (FAT) filesystem
-# 256 sectors (1MB) reserved for LittleFS (via dir2uf2 --fs-reserve below)
-
-if (EXISTS "${PIMORONI_TOOLS_DIR}/ffsmake/build/ffsmake" AND EXISTS "${PIMORONI_FATFS_DIR}")
-    MESSAGE("ffsmake: Using root ${PIMORONI_FATFS_DIR}.")
-    MESSAGE("ffsmake: Outputting filesystem binary: ${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin")
-    add_custom_target("${MICROPY_TARGET}-fatfs.bin" ALL
-        COMMAND "${PIMORONI_TOOLS_DIR}/ffsmake/build/ffsmake" --label="${PIMORONI_FATFS_LABEL}" --sector-count=3072 --force --directory "${PIMORONI_FATFS_DIR}" --output "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin"
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "ffsmake: Packing FatFS filesystem to ${MICROPY_TARGET}-fatfs.bin."
-        DEPENDS ${MICROPY_TARGET}
-        DEPENDS "${MICROPY_TARGET}-verify"
     )
 endif()
 
@@ -49,7 +31,7 @@ if (EXISTS "${MICROPY_DIR}/tools/mpremote/mpremote.py" AND EXISTS "${PIMORONI_RO
     )
 endif()
 
-if (EXISTS "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" AND EXISTS "${PIMORONI_FATFS_DIR}")
+if (EXISTS "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" AND EXISTS "${PIMORONI_ROMFS_DIR}")
     MESSAGE("dir2uf2: Using ROMFS binary: ${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-romfs.bin")
     add_custom_target("${MICROPY_TARGET}-romfs.uf2" ALL
         COMMAND ${Python_EXECUTABLE} "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" --fs-blockdev ROMFS --sparse --append-to "${MICROPY_TARGET}.uf2" --filename romfs.uf2 "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-romfs.bin"
@@ -62,14 +44,21 @@ if (EXISTS "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" AND EXISTS "${PIMORONI_FATFS_
     )
 endif()
 
-if (EXISTS "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" AND EXISTS "${PIMORONI_FATFS_DIR}")
-    MESSAGE("dir2uf2: Using filesystem binary: ${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin")
+# 4096 sectors (16MB) total
+# 512 sectors (2MB) allocated for MicroPython firmware
+# 256 sectors (1MB) allocated for ROMFS
+# 3328 sectors (13MB) for the LittleFS user filesystem, with PIMORONI_LFS_DIR at /system
+
+if (EXISTS "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" AND EXISTS "${PIMORONI_LFS_DIR}")
+    set(PIMORONI_LFS_STAGING "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-lfs")
+    MESSAGE("dir2uf2: Using LittleFS root ${PIMORONI_LFS_DIR} at /system")
     add_custom_target("${MICROPY_TARGET}-with-filesystem.uf2" ALL
-        COMMAND ${Python_EXECUTABLE} "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" --fs-reserve ${PIMORONI_LFS_RESERVED} --fs-blockdev MicroPython --sparse --append-to "${MICROPY_TARGET}-romfs.uf2" --filename with-filesystem.uf2 "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-fatfs.bin"
+        COMMAND ${CMAKE_COMMAND} -E rm -rf "${PIMORONI_LFS_STAGING}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${PIMORONI_LFS_DIR}" "${PIMORONI_LFS_STAGING}/system"
+        COMMAND ${Python_EXECUTABLE} "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" --fs-type lfs --fs-compact --prog-size 256 --fs-blockdev MicroPython --sparse --append-to "${MICROPY_TARGET}-romfs.uf2" --filename with-filesystem.uf2 "${PIMORONI_LFS_STAGING}"
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "dir2uf2: Appending filesystem to ${MICROPY_TARGET}.uf2."
+        COMMENT "dir2uf2: Appending LittleFS filesystem to ${MICROPY_TARGET}.uf2."
         DEPENDS "${MICROPY_TARGET}-romfs.uf2"
-        DEPENDS "${MICROPY_TARGET}-fatfs.bin"
         DEPENDS "${MICROPY_TARGET}-verify"
     )
 endif()

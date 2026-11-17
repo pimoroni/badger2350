@@ -1,24 +1,23 @@
-import os
 import powman
+from badgeware import message
+
+
+def safe_mode():
+    message("Safe Mode", "Connect to the Badgeware IDE to repair your badge.\n\nPress RESET to restart.")
+    display.update()
+
 
 if powman.get_wake_reason() == powman.WAKE_DOUBLETAP:
-    import _msc  # noqa: F401
+    safe_mode()
 
+else:
+    try:
+        with open("hardware_test.txt", "r"):
+            import hardware_test   # noqa F401
+    except OSError:
+        pass
 
-try:
-    os.listdir("/system")
-except OSError:
-    fatal_error("System Error!", "Unable to mount filesystem. This may be a temporary error, try resetting your board!")
-
-
-try:
-    with open("hardware_test.txt", "r"):
-        import hardware_test   # noqa F401
-except OSError:
-    pass
-
-
-try:
-    __import__("/system/main")
-except ImportError:
-    fatal_error("System Error!", "Could not find main.py. Please double-tap RESET to switch into USB Mass Storage mode and replace it!")
+    try:
+        __import__("/system/main")
+    except ImportError:
+        fatal_error("System Error!", "Could not find /system/main.py. Connect to the Badgeware IDE to reinstall it!")
