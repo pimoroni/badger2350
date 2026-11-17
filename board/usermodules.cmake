@@ -62,4 +62,15 @@ enable_ulab()
 
 # IDE debug channel (second USB CDC interface)
 include(modules/c/cdcaux/micropython)
-target_compile_definitions(usermod_cdcaux INTERFACE BADGEWARE_MODEL="badger2350")
+execute_process(
+    COMMAND git describe --tags --always --dirty
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE BADGEWARE_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+if(NOT BADGEWARE_VERSION)
+    set(BADGEWARE_VERSION "unknown")
+endif()
+message("Badgeware firmware version: ${BADGEWARE_VERSION}")
+target_compile_definitions(usermod_cdcaux INTERFACE BADGEWARE_MODEL="badger2350" BADGEWARE_VERSION="${BADGEWARE_VERSION}")

@@ -17,9 +17,13 @@
 #define BADGEWARE_MODEL "unknown"
 #endif
 
+#ifndef BADGEWARE_VERSION
+#define BADGEWARE_VERSION "unknown"
+#endif
+
 static const char cdcaux_ident[] =
     "{\"ident\": \"badgeware-ide\", \"protocol\": " CDCAUX_PROTOCOL_VERSION
-    ", \"model\": \"" BADGEWARE_MODEL "\", \"board\": \"" MICROPY_HW_BOARD_NAME
+    ", \"model\": \"" BADGEWARE_MODEL "\", \"version\": \"" BADGEWARE_VERSION "\", \"board\": \"" MICROPY_HW_BOARD_NAME
     "\", \"firmware\": \"" MICROPY_GIT_TAG "\", \"features\": [\"repl\", \"debug\", \"littlefs\"]}\n";
 
 static bool cdcaux_claimed = false;
