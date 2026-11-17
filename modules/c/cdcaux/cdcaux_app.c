@@ -209,6 +209,7 @@ static mp_obj_t cdcaux_app(mp_obj_t path_in) {
         cdcaux_app_copy_path(app_path, mp_obj_str_get_str(path_in));
     }
     cdcaux_fs_state_changed();
+    cdcaux_service();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(cdcaux_app_obj, cdcaux_app);
