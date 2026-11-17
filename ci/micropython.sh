@@ -3,7 +3,7 @@ export TERM=${TERM:="xterm-256color"}
 # cache buster: 2026-08-27
 
 MICROPYTHON_FLAVOUR="pimoroni"
-MICROPYTHON_VERSION="bw-1.29.0-gc"
+MICROPYTHON_VERSION="bw-1.29.0-ide"
 
 PIMORONI_PICO_FLAVOUR="pimoroni"
 PIMORONI_PICO_VERSION="f5ad5244cff915d69cacd006fd3ccd71935b591e"
