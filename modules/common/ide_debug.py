@@ -180,10 +180,12 @@ def _poll():
     while b"\n" in _rx:
         line, _rx = _rx.split(b"\n", 1)
         if line.strip():
+            command = {}
             try:
-                _handle(json.loads(line))
+                command = json.loads(line)
+                _handle(command)
             except Exception as e:  # noqa: BLE001
-                _send({"event": "error", "message": type(e).__name__ + ": " + str(e)})
+                _send({"event": "error", "id": command.get("id"), "message": type(e).__name__ + ": " + str(e)})
 
 
 def _stop(frame, reason):
