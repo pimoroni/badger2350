@@ -46,6 +46,9 @@ void mp_usbd_cdc_aux_rx_cb(uint8_t itf) {
 
 static mp_obj_t cdcaux_claim(mp_obj_t claim_in) {
     cdcaux_claimed = mp_obj_is_true(claim_in);
+    if (!cdcaux_claimed) {
+        tud_cdc_n_read_flush(CDCAUX_ITF);
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(cdcaux_claim_obj, cdcaux_claim);
