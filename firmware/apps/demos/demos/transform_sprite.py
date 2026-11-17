@@ -2,7 +2,7 @@ import math
 
 DITHER = True
 
-skull = image.load("/system/assets/skull.png")
+skull = image.load("/assets/skull.png")
 
 
 def magic_sprite(src, pos, scale=1, angle=0):

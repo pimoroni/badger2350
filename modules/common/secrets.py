@@ -1,17 +1,23 @@
 from badgeware import fatal_error
 
 
+WIFI_SSID = ""
+WIFI_PASSWORD = ""
+REGION = "eu"
+TIMEZONE = 0
+LAT = ""
+LON = ""
+
 try:
-    _secrets = __import__("/secrets")
+    _from_file = __import__("/secrets").__dict__
 except ImportError:
-    _secrets = __import__("/system/secrets")
+    _from_file = {}
 
-# Copy contents of secrets to module scope
-for k, v in _secrets.__dict__.items():
-    if not k.startswith("__"):
-        locals()[k] = v
+for _key, _value in _from_file.items():
+    if not _key.startswith("__"):
+        globals()[_key] = _value
 
-del _secrets, k, v
+del _from_file
 
 
 def require(*keys):

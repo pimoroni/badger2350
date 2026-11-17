@@ -2,8 +2,8 @@ import sys
 import os
 import math
 
-sys.path.insert(0, "/system/apps/hydrate")
-os.chdir("/system/apps/hydrate")
+sys.path.insert(0, "/apps/hydrate")
+os.chdir("/apps/hydrate")
 
 CX = screen.width / 2
 CY = screen.height / 2

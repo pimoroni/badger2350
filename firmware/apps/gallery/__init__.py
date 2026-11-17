@@ -1,8 +1,8 @@
 import os
 import sys
 
-sys.path.insert(0, "/system/apps/gallery")
-os.chdir("/system/apps/gallery")
+sys.path.insert(0, "/apps/gallery")
+os.chdir("/apps/gallery")
 
 import ui
 
@@ -12,14 +12,14 @@ files = []
 
 # list the png images, skipping macOS sidecar files and dotfiles
 image_files = [
-    file for file in os.listdir("/system/apps/gallery/images")
+    file for file in os.listdir("/apps/gallery/images")
     if not file.startswith(("__", ".")) and file.endswith(".png")
 ]
 total_files = len(image_files)
 
 # we don't want to continue if there are no images to show!
 if total_files == 0:
-    fatal_error("No images found!", "Use the Badgeware IDE to copy your PNGs to /system/apps/gallery/images")
+    fatal_error("No images found!", "Use the Badgeware IDE to copy your PNGs to /apps/gallery/images")
 
 bar_width = screen.width - 20
 bar_x = (screen.width // 2) - (bar_width // 2)
@@ -50,7 +50,7 @@ for file in image_files:
     files.append({
         "name": file,
         "title": name.replace("-", " "),
-        "image": image.load(f"/system/apps/gallery/images/{name}.png")
+        "image": image.load(f"/apps/gallery/images/{name}.png")
     })
 
 

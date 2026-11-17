@@ -176,7 +176,7 @@ class Badge():
 
         return False
 
-    def disk_free(self, mountpoint="/system"):
+    def disk_free(self, mountpoint="/"):
         # f_bfree and f_bavail should be the same?
         # f_files, f_ffree, f_favail and f_flag are unsupported.
         f_bsize, f_frsize, f_blocks, f_bfree = os.statvfs(mountpoint)[:4]

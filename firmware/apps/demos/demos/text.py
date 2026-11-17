@@ -3,7 +3,7 @@ import math
 # The pixel font draws without antialiasing, so the frame needs no dither pass;
 # the [pen:...] tags pick greys the panel can show directly. The sprite is
 # dithered once at load so it survives being blitted into the text run.
-skull = image.load("/system/assets/skull.png")
+skull = image.load("/assets/skull.png")
 skull.dither()
 add_sprite("skull", skull)
 

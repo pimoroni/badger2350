@@ -17,7 +17,26 @@ else:
     except OSError:
         pass
 
-    try:
-        __import__("/system/main")
-    except ImportError:
-        fatal_error("System Error!", "Could not find /system/main.py. Connect to the Badgeware IDE to reinstall it!")
+    if not file_exists("/apps/menu/__init__.py"):
+        fatal_error("System Error!", "Could not find the launcher in /apps/menu. Connect to the Badgeware IDE to reinstall it!")
+
+    state = {
+        "active": 0,
+        "running": "/apps/menu"
+    }
+    State.load("menu", state)
+
+    app = state["running"]
+
+    if not file_exists(app) or powman.get_wake_reason() == powman.WAKE_RESET:
+        app = state["running"] = "/apps/menu"
+        State.modify("menu", state)
+        rtc.clear_alarm()
+
+    launch(app)
+
+    state["running"] = "/apps/menu"
+    State.modify("menu", state)
+    rtc.clear_alarm()
+
+    reset()

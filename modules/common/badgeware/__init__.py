@@ -80,10 +80,10 @@ def wait_for_button_or_alarm(timeout=30_000):
 def clear_running():
     state = {
         "active": 0,
-        "running": "/system/apps/menu"
+        "running": "/apps/menu"
     }
     State.load("menu", state)
-    state["running"] = "/system/apps/menu"
+    state["running"] = "/apps/menu"
     State.modify("menu", state)
     rtc.clear_alarm()
 
@@ -125,7 +125,7 @@ def launch(path):
 
     finally:
         # Clean up path
-        if sys.path[0].startswith("/system/apps"):
+        if sys.path and sys.path[0] == path:
             sys.path.pop(0)
 
         # Clean up any imported modules

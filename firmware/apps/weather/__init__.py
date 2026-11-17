@@ -10,8 +10,8 @@ import wifi
 
 secrets.require("LAT", "LON")
 
-sys.path.insert(0, "/system/apps/weather")
-os.chdir("/system/apps/weather")
+sys.path.insert(0, "/apps/weather")
+os.chdir("/apps/weather")
 
 import ui
 

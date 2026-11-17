@@ -39,7 +39,8 @@ class RTC:
 
     def _get_running_app(self):
         try:
-            return [str(v)[22:].split("'")[0] for _k, v in sys.modules.items() if "module '/system/apps/" in str(v)][0]
+            prefix = "<module '/apps/"
+            return [str(v)[len(prefix):].split("'")[0].split("/")[0] for v in sys.modules.values() if str(v).startswith(prefix)][0]
         except IndexError:
             return None
 

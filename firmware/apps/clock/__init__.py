@@ -1,9 +1,9 @@
 import sys
 import os
 
-sys.path.insert(0, "/system/apps/clock")
+sys.path.insert(0, "/apps/clock")
 sys.path.insert(0, "/")
-os.chdir("/system/apps/clock")
+os.chdir("/apps/clock")
 
 import time
 import ntptime

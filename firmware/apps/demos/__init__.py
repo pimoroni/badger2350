@@ -7,7 +7,7 @@ import gc
 import os
 import sys
 
-APP_DIR = "/system/apps/demos"
+APP_DIR = "/apps/demos"
 
 sys.path.insert(0, APP_DIR)
 os.chdir(APP_DIR)

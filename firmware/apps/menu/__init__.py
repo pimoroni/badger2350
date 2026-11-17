@@ -1,9 +1,9 @@
 import os
 import sys
 
-sys.path.insert(0, "/system/apps/menu")
+sys.path.insert(0, "/apps/menu")
 sys.path.insert(0, "/")
-os.chdir("/system/apps/menu")
+os.chdir("/apps/menu")
 
 import ui
 
@@ -14,11 +14,11 @@ screen.font = font.nope
 badge.mode(FAST_UPDATE | NON_BLOCKING)
 
 # find installed apps and create apps
-apps = Apps("/system/apps")
+apps = Apps("/apps")
 
 state = {
     "active": 0,
-    "running": "/system/apps/menu"
+    "running": "/apps/menu"
 }
 State.load("menu", state)
 
@@ -55,7 +55,7 @@ def update():
         State.modify("menu", state)
 
     if badge.pressed(BUTTON_B):
-        state["running"] = f"/system/apps/{apps.active.path}"
+        state["running"] = f"/apps/{apps.active.path}"
         State.modify("menu", state)
         # Reset into the newly running app
         reset()

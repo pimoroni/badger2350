@@ -2,10 +2,10 @@ import math
 
 # The sprite is dithered once at load; the vector glyphs are left undithered so
 # their antialiased edges stay smooth against the page.
-skull = image.load("/system/assets/skull.png")
+skull = image.load("/assets/skull.png")
 skull.dither()
 add_sprite("skull", skull)
-dynapuff = font.load("/system/assets/fonts/DynaPuff-Medium.af")
+dynapuff = font.load("/fonts/DynaPuff-Medium.af")
 
 
 # [pen:r,g,b] and [sprite:skull] use the built-in renderers; register a custom

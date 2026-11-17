@@ -1,8 +1,8 @@
 import os
 import sys
 
-sys.path.insert(0, "/system/apps/list")
-os.chdir("/system/apps/list")
+sys.path.insert(0, "/apps/list")
+os.chdir("/apps/list")
 
 import binascii
 

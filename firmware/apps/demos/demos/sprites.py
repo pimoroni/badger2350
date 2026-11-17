@@ -3,7 +3,7 @@ import random
 
 DITHER = True
 
-skull = image.load("/system/assets/skull.png")
+skull = image.load("/assets/skull.png")
 
 
 def update(step):
