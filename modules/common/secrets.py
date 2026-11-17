@@ -19,4 +19,4 @@ def require(*keys):
     keys = [key for key in keys if getattr(secrets, key, None) in (None, "")]
     if keys:
         required = ", ".join(keys)
-        fatal_error("Missing Secrets!", f"Put your badge into disk mode (tap RESET twice)\nEdit 'secrets.py' and set {required}")
+        fatal_error("Missing Secrets!", f"Connect to the Badgeware IDE and open Config to set {required}.")

@@ -57,7 +57,7 @@ def connect(ssid=None, psk=None, timeout=60, retries=5):
     psk = secrets.WIFI_PASSWORD
 
     if not ssid:
-      fatal_error("Missing Details!", "Put your badge into disk mode (tap RESET twice)\nEdit 'secrets.py' to set WiFi details and your local region")
+      fatal_error("Missing Details!", "Connect to the Badgeware IDE and open Config to set your WiFi details and region.")
 
   if wlan:
     _tick()

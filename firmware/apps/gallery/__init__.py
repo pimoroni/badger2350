@@ -19,7 +19,7 @@ total_files = len(image_files)
 
 # we don't want to continue if there are no images to show!
 if total_files == 0:
-    fatal_error("No images found!", "Enter disk mode and copy your PNGs to /apps/gallery/images")
+    fatal_error("No images found!", "Use the Badgeware IDE to copy your PNGs to /system/apps/gallery/images")
 
 bar_width = screen.width - 20
 bar_x = (screen.width // 2) - (bar_width // 2)
