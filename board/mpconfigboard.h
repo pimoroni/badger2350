@@ -60,6 +60,12 @@ int mp_hal_is_pin_reserved(int n);
 #define MICROPY_HW_USB_CDC_AUX                  (1)
 #define MICROPY_HW_USB_CDC_INTERFACE_STRING     "Badger REPL"
 #define MICROPY_HW_USB_CDC_AUX_INTERFACE_STRING "Badger Debug"
+
+#define MICROPY_ENABLE_VM_ABORT                 (1)
+#define MICROPY_PYEXEC_ENABLE_VM_ABORT          (1)
+
+void cdcaux_soft_reset(void);
+#define MICROPY_BOARD_END_SOFT_RESET()          cdcaux_soft_reset()
 #define MICROPY_HW_USB_DESC_STR_MAX             (40)
 #define MICROPY_HW_USB_MANUFACTURER_STRING      "Pimoroni"
 #define MICROPY_HW_USB_PRODUCT_FS_STRING        MICROPY_HW_BOARD_NAME " MicroPython"

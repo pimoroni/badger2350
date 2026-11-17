@@ -1,9 +1,10 @@
 import rp2
 import vfs
 import machine  # noqa: F401
+import cdcaux
 
 
-bdev = rp2.Flash()
+bdev = cdcaux.BlockDevice(rp2.Flash())
 try:
     fs = vfs.VfsLfs2(bdev, progsize=256)
     vfs.mount(fs, "/")
@@ -13,4 +14,4 @@ except OSError:
     vfs.mount(fs, "/")
 
 
-del rp2, vfs, bdev, fs
+del rp2, vfs, bdev, fs, cdcaux

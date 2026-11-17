@@ -4,6 +4,7 @@ import sys
 import time
 import os
 
+import cdcaux
 import machine
 import micropython
 import ssd1680
@@ -89,6 +90,8 @@ def clear_running():
 
 
 def launch(path):
+    cdcaux.app(path)
+
     badge.first_update = True
 
     def do_exit():

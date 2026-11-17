@@ -2,9 +2,13 @@ import binascii
 import builtins
 import gc
 import json
+import machine
 import micropython
 import os
 import sys
+import time
+
+import cdcaux
 
 import badgeware
 
@@ -290,6 +294,7 @@ def execute(path, debug=False):
         if _is_dir(path):
             launch(path)
         else:
+            cdcaux.app(path)
             os.chdir("/" if path.startswith("/.ide/") else path.rsplit("/", 1)[0] or "/")
             _run_file(path)
     except badgeware.IDEStop:
@@ -298,3 +303,30 @@ def execute(path, debug=False):
         if debug:
             ide_debug.stop()
         builtins.ide_mode = False
+
+
+def _hold():
+    badgeware.message("Connected", "The Badgeware IDE is updating files.\n\nPress any button to cancel.")
+    display.update()
+    while cdcaux.held():
+        badge.poll()
+        if badge.pressed():
+            cdcaux.release()
+            break
+        time.sleep_ms(20)
+    while badge.pressed() or badge.held():
+        badge.poll()
+
+
+def serve():
+    if cdcaux.held():
+        _hold()
+    request = cdcaux.launch()
+    if request is None:
+        return
+    path, debug, resume = request
+    if resume:
+        launch(path)
+        reset()
+    execute(path, debug)
+    machine.soft_reset()
