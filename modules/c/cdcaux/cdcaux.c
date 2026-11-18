@@ -428,6 +428,18 @@ static void cdcaux_process_rx(cdcaux_buffers_t *buffers) {
     cdcaux_schedule();
 }
 
+static void cdcaux_rx_reset(void) {
+    cdcaux_stage_pos = 0;
+    cdcaux_stage_len = 0;
+    cdcaux_line_len = 0;
+    cdcaux_line_overflow = false;
+    cdcaux_line_ready = false;
+    cdcaux_payload_expected = 0;
+    cdcaux_payload_received = 0;
+    cdcaux_payload_discard = false;
+    cdcaux_inbox_len = 0;
+}
+
 void cdcaux_service(void) {
     if (cdcaux_guard_depth > 0) {
         cdcaux_service_pending = true;
@@ -439,6 +451,8 @@ void cdcaux_service(void) {
         cdcaux_buffers_t *buffers = cdcaux_buffers();
         bool connected = tud_cdc_n_connected(CDCAUX_ITF);
         if (cdcaux_was_connected && !connected) {
+            cdcaux_rx_reset();
+            tud_cdc_n_read_flush(CDCAUX_ITF);
             cdcaux_fs_disconnected();
             cdcaux_app_disconnected();
         }
@@ -461,15 +475,7 @@ void cdcaux_soft_reset(void) {
     cdcaux_guard_depth = 0;
     cdcaux_service_pending = false;
     MP_STATE_VM(cdcaux_buffers) = NULL;
-    cdcaux_stage_pos = 0;
-    cdcaux_stage_len = 0;
-    cdcaux_line_len = 0;
-    cdcaux_line_overflow = false;
-    cdcaux_line_ready = false;
-    cdcaux_payload_expected = 0;
-    cdcaux_payload_received = 0;
-    cdcaux_payload_discard = false;
-    cdcaux_inbox_len = 0;
+    cdcaux_rx_reset();
     cdcaux_fs_soft_reset();
     cdcaux_app_soft_reset();
 }
