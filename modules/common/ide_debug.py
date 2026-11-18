@@ -197,7 +197,7 @@ def _stop(frame, reason):
         "event": "stopped",
         "reason": reason,
         "stack": [
-            {"file": _frame_file(f), "line": f.f_lineno, "name": f.f_code.co_name, "user": _is_user_file(_frame_file(f))}
+            {"file": _frame_file(f), "line": f.f_lineno, "first": f.f_code.co_firstlineno, "name": f.f_code.co_name, "user": _is_user_file(_frame_file(f))}
             for f in _stopped_frames
         ],
     })
