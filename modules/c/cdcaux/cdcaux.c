@@ -170,6 +170,10 @@ static const char *cdcaux_errno_name(mp_int_t err) {
             return "EINVAL";
         case MP_ENOSPC:
             return "ENOSPC";
+        case MP_EROFS:
+            return "EROFS";
+        case MP_EPERM:
+            return "EPERM";
         case CDCAUX_ENAMETOOLONG:
             return "ENAMETOOLONG";
         case CDCAUX_ENOTEMPTY:

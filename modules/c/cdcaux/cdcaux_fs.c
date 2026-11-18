@@ -32,16 +32,19 @@ static soft_timer_entry_t fs_timer;
 typedef void (*cdcaux_fs_handler_t)(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len);
 
 bool cdcaux_fs_ready(void) {
-    const char *rest;
-    mp_vfs_mount_t *mount = mp_vfs_lookup_path("/", &rest);
-    return mount != MP_VFS_NONE && mount != MP_VFS_ROOT && mount->len == 1;
+    for (mp_vfs_mount_t *mount = MP_STATE_VM(vfs_mount_table); mount != NULL; mount = mount->next) {
+        if (mount->len == 1) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static mp_obj_t fs_str(const char *str) {
     return mp_obj_new_str(str, strlen(str));
 }
 
-static mp_obj_t fs_path(mp_obj_t request, qstr key, const char **path_out) {
+static mp_obj_t fs_path(mp_obj_t request, qstr key, const char **path_out, bool writable) {
     const char *path = cdcaux_get_str(request, key);
     size_t len = strlen(path);
     if (len >= CDCAUX_PATH_MAX) {
@@ -61,10 +64,19 @@ static mp_obj_t fs_path(mp_obj_t request, qstr key, const char **path_out) {
         }
         segment += segment_len + (end == NULL ? 0 : 1);
     }
-    const char *rest;
-    mp_vfs_mount_t *mount = mp_vfs_lookup_path(path, &rest);
-    if (mount == MP_VFS_NONE || mount == MP_VFS_ROOT || mount->len != 1) {
-        mp_raise_OSError(MP_EINVAL);
+    if (len == 1) {
+        if (!cdcaux_fs_ready()) {
+            mp_raise_OSError(MP_EINVAL);
+        }
+    } else {
+        const char *rest;
+        mp_vfs_mount_t *mount = mp_vfs_lookup_path(path, &rest);
+        if (mount == MP_VFS_NONE || mount == MP_VFS_ROOT) {
+            mp_raise_OSError(MP_EINVAL);
+        }
+        if (writable && mount->len != 1) {
+            mp_raise_OSError(MP_EROFS);
+        }
     }
     *path_out = path;
     return cdcaux_get(request, key);
@@ -175,7 +187,7 @@ static void fs_info(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_
 
 static void fs_stat(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     const char *path;
-    mp_obj_t stat = mp_vfs_stat(fs_path(request, MP_QSTR_path, &path));
+    mp_obj_t stat = mp_vfs_stat(fs_path(request, MP_QSTR_path, &path, false));
     mp_obj_t *items = fs_stat_items(stat);
     bool is_dir = fs_is_dir(stat);
     cdcaux_reply_t reply;
@@ -189,7 +201,7 @@ static void fs_stat(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_
 
 static void fs_list(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     const char *path;
-    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path);
+    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path, false);
     mp_int_t offset = MAX(0, cdcaux_get_int(request, MP_QSTR_offset, 0));
     mp_int_t limit = MIN(CDCAUX_LIST_LIMIT_MAX, MAX(1, cdcaux_get_int(request, MP_QSTR_limit, CDCAUX_LIST_LIMIT)));
 
@@ -230,7 +242,7 @@ static void fs_list(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_
 
 static void fs_read(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     const char *path;
-    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path);
+    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path, false);
     mp_int_t offset = cdcaux_get_int(request, MP_QSTR_offset, 0);
     mp_int_t length = cdcaux_get_int(request, MP_QSTR_length, CDCAUX_CHUNK);
     if (offset < 0 || length < 0) {
@@ -270,7 +282,7 @@ static void fs_read(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_
 
 static void fs_hash(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     const char *path;
-    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path);
+    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path, false);
     mp_obj_t stat = mp_vfs_stat(path_obj);
     if (fs_is_dir(stat)) {
         mp_raise_OSError(MP_EISDIR);
@@ -312,7 +324,7 @@ static void fs_hash(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_
 
 static void fs_mkdir(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     const char *path;
-    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path);
+    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path, true);
     cdcaux_app_check_writable(path);
     if (!cdcaux_get_bool(request, MP_QSTR_parents)) {
         mp_vfs_mkdir(path_obj);
@@ -364,7 +376,7 @@ static void fs_remove_tree(mp_obj_t path_obj, bool recursive) {
 
 static void fs_remove(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     const char *path;
-    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path);
+    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path, true);
     if (strcmp(path, "/") == 0) {
         mp_raise_OSError(MP_EINVAL);
     }
@@ -376,8 +388,8 @@ static void fs_remove(mp_obj_t request, mp_obj_t id, const uint8_t *payload, siz
 static void fs_rename(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     const char *from;
     const char *to;
-    mp_obj_t from_obj = fs_path(request, MP_QSTR_from, &from);
-    mp_obj_t to_obj = fs_path(request, MP_QSTR_to, &to);
+    mp_obj_t from_obj = fs_path(request, MP_QSTR_from, &from, true);
+    mp_obj_t to_obj = fs_path(request, MP_QSTR_to, &to, true);
     cdcaux_app_check_writable(from);
     cdcaux_app_check_writable(to);
     mp_vfs_rename(from_obj, to_obj);
@@ -406,7 +418,7 @@ static void fs_release_handle(size_t index, bool discard) {
 
 static void fs_open_handle(mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     const char *path;
-    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path);
+    mp_obj_t path_obj = fs_path(request, MP_QSTR_path, &path, true);
     cdcaux_app_check_writable(path);
 
     mp_obj_t stat = fs_stat_maybe(path_obj);
