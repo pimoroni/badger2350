@@ -177,6 +177,23 @@ function ci_cmake_build {
     fi
 }
 
+function ci_simulator_bundle {
+    BOARD_ID=$1
+    if [ -z ${CI_RELEASE_FILENAME+x} ]; then
+        CI_RELEASE_FILENAME=$BOARD_ID
+    fi
+    IDE_DIR=$(mktemp -d)
+    git clone --depth 1 https://github.com/pimoroni/badgeware-ide "$IDE_DIR" || return $?
+    BUNDLE_DIR="$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator"
+    rm -rf "$BUNDLE_DIR" "$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator.zip"
+    python3 "$IDE_DIR/tools/bundle_board.py" "$BOARD_ID" "$CI_PROJECT_ROOT" HEAD \
+        --output "$BUNDLE_DIR" \
+        --mpy-cross "$CI_BUILD_ROOT/micropython/mpy-cross/build/mpy-cross" \
+        --frozen || return $?
+    (cd "$BUNDLE_DIR" && zip -qr "$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator.zip" .) || return $?
+    log_inform "Wrote $CI_RELEASE_FILENAME-simulator.zip"
+}
+
 if [ -z ${CI_USE_ENV+x} ] || [ -z ${CI_PROJECT_ROOT+x} ] || [ -z ${CI_BUILD_ROOT+x} ]; then
     SCRIPT_PATH=${BASH_SOURCE-$0}
     SCRIPT_PATH=$(dirname "$SCRIPT_PATH")

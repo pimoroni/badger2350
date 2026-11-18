@@ -93,6 +93,18 @@ jobs:
         source $CI_PROJECT_ROOT/ci/micropython.sh
         ci_cmake_build
 
+    - name: "Simulator: Bundle sources and debug tables"
+      shell: bash
+      run: |
+        source $CI_PROJECT_ROOT/ci/micropython.sh
+        ci_simulator_bundle ${{ matrix.name }}
+
+    - name: "Artifacts: Upload simulator bundle"
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ env.CI_RELEASE_FILENAME }}-simulator.zip
+        path: ${{ env.CI_BUILD_ROOT }}/${{ env.CI_RELEASE_FILENAME }}-simulator.zip
+
     - name: "Artifacts: Upload .uf2"
       uses: actions/upload-artifact@v7
       with:
@@ -116,3 +128,9 @@ jobs:
       uses: softprops/action-gh-release@v3
       with:
         files: ${{ env.CI_BUILD_ROOT }}/${{ env.CI_RELEASE_FILENAME }}-with-filesystem.uf2
+
+    - name: "Release: Upload simulator bundle"
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v3
+      with:
+        files: ${{ env.CI_BUILD_ROOT }}/${{ env.CI_RELEASE_FILENAME }}-simulator.zip
