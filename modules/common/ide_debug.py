@@ -240,7 +240,7 @@ def _trace_local(frame, event, _arg):
 def _trace(frame, event, _arg):
     if event != "call":
         return None
-    if not _is_user_file(_frame_file(frame)):
+    if not _is_user_file(_frame_file(frame)) and _mode != "step_in":
         return None
     return _trace_local
 
