@@ -10,6 +10,8 @@ PIMORONI_PICO_VERSION="f5ad5244cff915d69cacd006fd3ccd71935b591e"
 
 PIMORONI_PICOVECTOR_VERSION="v3.1.0"
 
+BADGEWARE_DEBUG_VERSION="e9aa5530ca4f36083c357e3fa3696f5f19ce5614"
+
 PY_DECL_VERSION="v0.0.5"
 DIR2UF2_VERSION="v0.1.0"
 FFSMAKE_VERSION="v0.0.3"
@@ -41,6 +43,20 @@ function ci_pimoroni_picovector_clone {
     git clone https://github.com/pimoroni/picovector-micropython "$CI_BUILD_ROOT/picovector-micropython"
     git -C "$CI_BUILD_ROOT/picovector-micropython" checkout $PIMORONI_PICOVECTOR_VERSION
     git -C "$CI_BUILD_ROOT/picovector-micropython" submodule update --init
+}
+
+function ci_badgeware_debug_dir {
+    echo "${BADGEWARE_DEBUG_DIR:-$CI_BUILD_ROOT/badgeware-debug}"
+}
+
+function ci_badgeware_debug_clone {
+    if [ -n "$BADGEWARE_DEBUG_DIR" ]; then
+        log_inform "Using badgeware-debug from $BADGEWARE_DEBUG_DIR"
+        return
+    fi
+    log_inform "Using badgeware-debug pimoroni/$BADGEWARE_DEBUG_VERSION"
+    git clone https://github.com/pimoroni/badgeware-debug "$CI_BUILD_ROOT/badgeware-debug"
+    git -C "$CI_BUILD_ROOT/badgeware-debug" checkout $BADGEWARE_DEBUG_VERSION
 }
 
 function ci_micropython_clone {
@@ -96,6 +112,7 @@ function ci_prepare_all {
     ci_micropython_clone
     ci_pimoroni_pico_clone
     ci_pimoroni_picovector_clone
+    ci_badgeware_debug_clone
     ci_micropython_build_mpy_cross
 }
 
@@ -142,6 +159,7 @@ function ci_cmake_configure {
     -DPICOTOOL_FETCH_FROM_GIT_PATH="$TOOLS_DIR/picotool" \
     -DPIMORONI_PICO_PATH="$CI_BUILD_ROOT/pimoroni-pico" \
     -DPICOVECTOR_MICROPYTHON_DIR="$CI_BUILD_ROOT/picovector-micropython" \
+    -DBADGEWARE_DEBUG_DIR="$(ci_badgeware_debug_dir)" \
     -DPIMORONI_TOOLS_DIR="$TOOLS_DIR" \
     -DUSER_C_MODULES="$MICROPY_BOARD_DIR/usermodules.cmake" \
     -DMICROPY_BOARD_DIR="$MICROPY_BOARD_DIR" \
@@ -182,14 +200,11 @@ function ci_simulator_bundle {
     if [ -z ${CI_RELEASE_FILENAME+x} ]; then
         CI_RELEASE_FILENAME=$BOARD_ID
     fi
-    IDE_DIR=$(mktemp -d)
-    git clone --depth 1 https://github.com/pimoroni/badgeware-ide "$IDE_DIR" || return $?
     BUNDLE_DIR="$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator"
     rm -rf "$BUNDLE_DIR" "$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator.zip"
-    python3 "$IDE_DIR/tools/bundle_board.py" "$BOARD_ID" "$CI_PROJECT_ROOT" HEAD \
+    python3 "$(ci_badgeware_debug_dir)/tools/bundle.py" "$BOARD_ID" "$CI_PROJECT_ROOT" HEAD \
         --output "$BUNDLE_DIR" \
-        --mpy-cross "$CI_BUILD_ROOT/micropython/mpy-cross/build/mpy-cross" \
-        --frozen || return $?
+        --mpy-cross "$CI_BUILD_ROOT/micropython/mpy-cross/build/mpy-cross" || return $?
     (cd "$BUNDLE_DIR" && zip -qr "$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator.zip" .) || return $?
     log_inform "Wrote $CI_RELEASE_FILENAME-simulator.zip"
 }

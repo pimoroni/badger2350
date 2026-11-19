@@ -7,6 +7,11 @@ set(PICO_NUM_GPIOS 30)
 # Board specific version of the frozen manifest
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)
 
+if(NOT BADGEWARE_DEBUG_DIR)
+    message(FATAL_ERROR "Set BADGEWARE_DEBUG_DIR to a badgeware-debug checkout.")
+endif()
+set(MICROPY_MANIFEST_BADGEWARE_DEBUG_DIR ${BADGEWARE_DEBUG_DIR})
+
 if(NOT DEFINED MICROPY_HW_ROMFS_BYTES)
     # set(MICROPY_HW_ROMFS_BYTES 1048576)  # 1 * 1024 * 1024
     math(EXPR MICROPY_HW_ROMFS_BYTES "1 * 1024 * 1024")

@@ -61,7 +61,7 @@ include(micropython-common-ulab)
 enable_ulab()
 
 # IDE debug channel (second USB CDC interface)
-include(modules/c/cdcaux/micropython)
+include(${BADGEWARE_DEBUG_DIR}/device/cdcaux/micropython.cmake)
 execute_process(
     COMMAND git describe --tags --always --dirty
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}

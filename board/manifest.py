@@ -16,3 +16,4 @@ require("datetime")
 
 freeze("../modules/python/")
 freeze("../modules/common/")
+freeze("$(BADGEWARE_DEBUG_DIR)/device/python")
