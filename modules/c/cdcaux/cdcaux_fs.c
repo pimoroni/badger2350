@@ -547,7 +547,7 @@ static void fs_clean_temps(void) {
     }
 }
 
-bool cdcaux_fs_dispatch(const char *cmd, mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
+static bool cdcaux_fs_dispatch(const char *cmd, mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(fs_handlers); i++) {
         if (strcmp(cmd, fs_handlers[i].name) != 0) {
             continue;
@@ -595,7 +595,7 @@ void cdcaux_fs_state_changed(void) {
     cdcaux_schedule();
 }
 
-void cdcaux_fs_service(bool connected) {
+static void cdcaux_fs_service(bool connected) {
     if (fs_changed_ready) {
         fs_changed_ready = false;
         if (fs_changed_dirty) {
@@ -617,7 +617,7 @@ void cdcaux_fs_service(bool connected) {
     }
 }
 
-void cdcaux_fs_disconnected(void) {
+static void cdcaux_fs_disconnected(void) {
     fs_watch = false;
     if (!cdcaux_fs_ready()) {
         return;
@@ -631,7 +631,7 @@ void cdcaux_fs_disconnected(void) {
     fs_active = false;
 }
 
-void cdcaux_fs_soft_reset(void) {
+static void cdcaux_fs_soft_reset(void) {
     fs_active = false;
     fs_temps_cleaned = false;
     fs_changed_dirty = false;
@@ -642,5 +642,13 @@ void cdcaux_fs_soft_reset(void) {
         MP_STATE_VM(cdcaux_fs_targets)[index] = MP_OBJ_NULL;
     }
 }
+
+const cdcaux_role_t cdcaux_fs_role = {
+    .prefix = "fs.",
+    .dispatch = cdcaux_fs_dispatch,
+    .service = cdcaux_fs_service,
+    .disconnected = cdcaux_fs_disconnected,
+    .soft_reset = cdcaux_fs_soft_reset,
+};
 
 #endif

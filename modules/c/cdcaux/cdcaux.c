@@ -40,6 +40,11 @@ typedef struct _cdcaux_buffers_t {
 
 MP_REGISTER_ROOT_POINTER(struct _cdcaux_buffers_t *cdcaux_buffers);
 
+static const cdcaux_role_t *const cdcaux_roles[] = {
+    &cdcaux_app_role,
+    &cdcaux_fs_role,
+};
+
 static bool cdcaux_claimed = false;
 static mp_sched_node_t cdcaux_node;
 static volatile uint32_t cdcaux_guard_depth = 0;
@@ -262,8 +267,11 @@ static const char *cdcaux_role_cmd(mp_obj_t request) {
         return NULL;
     }
     const char *name = mp_obj_str_get_str(cmd);
-    if (strncmp(name, "fs.", 3) == 0 || strncmp(name, "app.", 4) == 0) {
-        return name;
+    for (size_t i = 0; i < MP_ARRAY_SIZE(cdcaux_roles); i++) {
+        const char *prefix = cdcaux_roles[i]->prefix;
+        if (strncmp(name, prefix, strlen(prefix)) == 0) {
+            return name;
+        }
     }
     return NULL;
 }
@@ -276,7 +284,11 @@ static void cdcaux_execute(mp_obj_t request, const char *cmd, const uint8_t *pay
     cdcaux_app_touch();
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        if (!cdcaux_fs_dispatch(cmd, request, id, payload, payload_len) && !cdcaux_app_dispatch(cmd, request, id)) {
+        bool handled = false;
+        for (size_t i = 0; i < MP_ARRAY_SIZE(cdcaux_roles) && !handled; i++) {
+            handled = cdcaux_roles[i]->dispatch(cmd, request, id, payload, payload_len);
+        }
+        if (!handled) {
             mp_raise_OSError(MP_EINVAL);
         }
         nlr_pop();
@@ -453,12 +465,14 @@ void cdcaux_service(void) {
         if (cdcaux_was_connected && !connected) {
             cdcaux_rx_reset();
             tud_cdc_n_read_flush(CDCAUX_ITF);
-            cdcaux_fs_disconnected();
-            cdcaux_app_disconnected();
+            for (size_t i = 0; i < MP_ARRAY_SIZE(cdcaux_roles); i++) {
+                cdcaux_roles[i]->disconnected();
+            }
         }
         cdcaux_was_connected = connected;
-        cdcaux_app_service(connected);
-        cdcaux_fs_service(connected);
+        for (size_t i = 0; i < MP_ARRAY_SIZE(cdcaux_roles); i++) {
+            cdcaux_roles[i]->service(connected);
+        }
         cdcaux_process_rx(buffers);
         nlr_pop();
     } else {
@@ -476,8 +490,9 @@ void cdcaux_soft_reset(void) {
     cdcaux_service_pending = false;
     MP_STATE_VM(cdcaux_buffers) = NULL;
     cdcaux_rx_reset();
-    cdcaux_fs_soft_reset();
-    cdcaux_app_soft_reset();
+    for (size_t i = 0; i < MP_ARRAY_SIZE(cdcaux_roles); i++) {
+        cdcaux_roles[i]->soft_reset();
+    }
 }
 
 typedef struct _cdcaux_block_device_obj_t {

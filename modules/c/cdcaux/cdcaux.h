@@ -17,6 +17,14 @@ typedef enum {
     CDCAUX_STATE_HELD,
 } cdcaux_state_t;
 
+typedef struct _cdcaux_role_t {
+    const char *prefix;
+    bool (*dispatch)(const char *cmd, mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len);
+    void (*service)(bool connected);
+    void (*disconnected)(void);
+    void (*soft_reset)(void);
+} cdcaux_role_t;
+
 typedef struct _cdcaux_reply_t {
     vstr_t vstr;
     mp_print_t print;
@@ -43,20 +51,14 @@ const char *cdcaux_app_state_name(void);
 void cdcaux_app_check_writable(const char *path);
 void cdcaux_app_touch(void);
 bool cdcaux_app_reset_pending(void);
-void cdcaux_app_service(bool connected);
-void cdcaux_app_disconnected(void);
-void cdcaux_app_soft_reset(void);
-bool cdcaux_app_dispatch(const char *cmd, mp_obj_t request, mp_obj_t id);
 
 bool cdcaux_fs_ready(void);
-bool cdcaux_fs_dispatch(const char *cmd, mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len);
-void cdcaux_fs_service(bool connected);
-void cdcaux_fs_disconnected(void);
-void cdcaux_fs_soft_reset(void);
 void cdcaux_fs_mark_changed(void);
 void cdcaux_fs_state_changed(void);
 
 extern const mp_obj_type_t cdcaux_block_device_type;
+extern const cdcaux_role_t cdcaux_app_role;
+extern const cdcaux_role_t cdcaux_fs_role;
 
 MP_DECLARE_CONST_FUN_OBJ_1(cdcaux_app_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(cdcaux_held_obj);

@@ -162,7 +162,9 @@ static void cdcaux_app_run(mp_obj_t request, mp_obj_t id) {
     cdcaux_app_request_reset();
 }
 
-bool cdcaux_app_dispatch(const char *cmd, mp_obj_t request, mp_obj_t id) {
+static bool cdcaux_app_dispatch(const char *cmd, mp_obj_t request, mp_obj_t id, const uint8_t *payload, size_t payload_len) {
+    (void)payload;
+    (void)payload_len;
     if (strcmp(cmd, "fs.lock") == 0) {
         cdcaux_app_hold("fs.lock", id);
     } else if (strcmp(cmd, "app.stop") == 0) {
@@ -177,7 +179,7 @@ bool cdcaux_app_dispatch(const char *cmd, mp_obj_t request, mp_obj_t id) {
     return true;
 }
 
-void cdcaux_app_service(bool connected) {
+static void cdcaux_app_service(bool connected) {
     if (app_held && (mp_uint_t)(mp_hal_ticks_ms() - app_last_request_ms) > CDCAUX_LEASE_MS) {
         cdcaux_app_set_held(false);
     }
@@ -191,16 +193,24 @@ void cdcaux_app_service(bool connected) {
     }
 }
 
-void cdcaux_app_disconnected(void) {
+static void cdcaux_app_disconnected(void) {
     app_reply_event = NULL;
     cdcaux_app_set_held(false);
 }
 
-void cdcaux_app_soft_reset(void) {
+static void cdcaux_app_soft_reset(void) {
     app_reset_pending = false;
     app_path[0] = '\0';
     app_last_request_ms = mp_hal_ticks_ms();
 }
+
+const cdcaux_role_t cdcaux_app_role = {
+    .prefix = "app.",
+    .dispatch = cdcaux_app_dispatch,
+    .service = cdcaux_app_service,
+    .disconnected = cdcaux_app_disconnected,
+    .soft_reset = cdcaux_app_soft_reset,
+};
 
 static mp_obj_t cdcaux_app(mp_obj_t path_in) {
     if (path_in == mp_const_none) {
