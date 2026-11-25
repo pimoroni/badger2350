@@ -5,7 +5,7 @@ import math
 skull = image.load("/assets/skull.png")
 skull.dither()
 add_sprite("skull", skull)
-dynapuff = font.load("/fonts/DynaPuff-Medium.af")
+dynapuff = font.dynapuff
 
 
 # [pen:r,g,b] and [sprite:skull] use the built-in renderers; register a custom
