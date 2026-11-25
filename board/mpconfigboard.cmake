@@ -18,8 +18,8 @@ if(NOT DEFINED MICROPY_HW_ROMFS_BYTES)
 endif()
 
 if(NOT DEFINED MICROPY_HW_FLASH_STORAGE_BYTES)
-    # set(MICROPY_HW_FLASH_STORAGE_BYTES 13631488)  # 16 * 1024 * 1024 - 1MB for ROMFS and 2MB for firmware
-    math(EXPR MICROPY_HW_FLASH_STORAGE_BYTES "(14 * 1024 * 1024) - ${MICROPY_HW_ROMFS_BYTES}")
+    # set(MICROPY_HW_FLASH_STORAGE_BYTES 12582912)  # 16 * 1024 * 1024 - 1MB for ROMFS and 3MB for firmware
+    math(EXPR MICROPY_HW_FLASH_STORAGE_BYTES "(13 * 1024 * 1024) - ${MICROPY_HW_ROMFS_BYTES}")
 endif()
 
 add_compile_options(-fno-math-errno)   # hardware VSQRT on the M33 FPU (safe: MP math uses isnan/isinf, not errno)

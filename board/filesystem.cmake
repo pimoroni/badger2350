@@ -45,9 +45,9 @@ if (EXISTS "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" AND EXISTS "${PIMORONI_ROMFS_
 endif()
 
 # 4096 sectors (16MB) total
-# 512 sectors (2MB) allocated for MicroPython firmware
+# 768 sectors (3MB) allocated for MicroPython firmware
 # 256 sectors (1MB) allocated for ROMFS
-# 3328 sectors (13MB) for the LittleFS user filesystem, with PIMORONI_LFS_DIR at its root
+# 3072 sectors (12MB) for the LittleFS user filesystem, with PIMORONI_LFS_DIR at its root
 
 if (EXISTS "${PIMORONI_TOOLS_DIR}/dir2uf2/dir2uf2" AND EXISTS "${PIMORONI_LFS_DIR}")
     set(PIMORONI_LFS_STAGING "${CMAKE_BINARY_DIR}/${MICROPY_TARGET}-lfs")
