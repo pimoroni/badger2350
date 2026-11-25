@@ -1,16 +1,16 @@
 export TERM=${TERM:="xterm-256color"}
 
-# cache buster: 2026-11-23
+# cache buster: 2026-11-25
 
 MICROPYTHON_FLAVOUR="pimoroni"
-MICROPYTHON_VERSION="bw-1.29.0-ide"
+MICROPYTHON_VERSION="feature/v4.0.0"
 
 PIMORONI_PICO_FLAVOUR="pimoroni"
 PIMORONI_PICO_VERSION="f5ad5244cff915d69cacd006fd3ccd71935b591e"
 
 PIMORONI_PICOVECTOR_VERSION="feature/picovector-v4.0.0"
 
-BADGEWARE_DEBUG_VERSION="8a82fbdf3a05115fd82d9b7a55bf775a70f71d12"
+BADGEWARE_DEBUG_VERSION="fec27bd2aeceb98c5615490e38f63d3ae801f613"
 
 PY_DECL_VERSION="v0.0.5"
 DIR2UF2_VERSION="v0.1.0"
@@ -203,8 +203,7 @@ function ci_simulator_bundle {
     BUNDLE_DIR="$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator"
     rm -rf "$BUNDLE_DIR" "$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator.zip"
     python3 "$(ci_badgeware_debug_dir)/tools/bundle.py" "$BOARD_ID" "$CI_PROJECT_ROOT" HEAD \
-        --output "$BUNDLE_DIR" \
-        --mpy-cross "$CI_BUILD_ROOT/micropython/mpy-cross/build/mpy-cross" || return $?
+        --output "$BUNDLE_DIR" || return $?
     (cd "$BUNDLE_DIR" && zip -qr "$CI_BUILD_ROOT/$CI_RELEASE_FILENAME-simulator.zip" .) || return $?
     log_inform "Wrote $CI_RELEASE_FILENAME-simulator.zip"
 }
