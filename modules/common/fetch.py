@@ -754,6 +754,15 @@ class url:
             return None
         return self._fetch.to_json()
 
+    def json_lines(self):
+        # A list with one value per line, for JSON Lines responses such as
+        # ntfy's, where json() fails on the second line. Empty for an empty
+        # response.
+        if self._file:
+            with open(self._file, "rb") as file:
+                return [json.loads(line) for line in file if line.strip()]
+        return [json.loads(line) for line in bytes(self._fetch.body).split(b"\n") if line.strip()]
+
     def data(self):
         # The in-memory response as text. A download saved with .to(...) is meant
         # to stay out of RAM, so read it from .path instead.
