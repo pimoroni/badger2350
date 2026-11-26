@@ -640,7 +640,8 @@ class AsyncFetch:
         if self._file:
             return json.load(self.stream)
 
-        if self._buffer is None:
+        # The buffer outlives an earlier response, so check what this one filled
+        if self._buffer is None or self._buffer_len == 0:
             raise ValueError("No response body to parse")
 
         # json.loads reads any buffer in place, so the body is parsed without a copy
@@ -748,6 +749,9 @@ class url:
         return self.done
 
     def json(self):
+        # None for an empty response, such as a poll with nothing new
+        if not self._file and len(self._fetch.body) == 0:
+            return None
         return self._fetch.to_json()
 
     def data(self):
