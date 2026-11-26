@@ -719,8 +719,10 @@ class url:
 
     @property
     def done(self):
-        # Pumps the event loop, True on the frame a fresh response arrives
-        if not wifi.connect():
+        # Pumps the event loop, True on the frame a fresh response arrives. An
+        # app may have connected with its own details, so only fall back to
+        # connecting with secrets.py when it hasn't.
+        if not wifi.is_connected() and not wifi.connect():
             return False
 
         if not self._started:

@@ -52,16 +52,18 @@ def _tick():
 def connect(ssid=None, psk=None, timeout=60, retries=5):
   global wlan, _timeout_ticks, _timeout, _retries, _ssid, _psk
 
+  # Once a connection is under way, with whichever details, calling again
+  # advances it
+  if wlan:
+    _tick()
+    return is_connected()
+
   if ssid is None and psk is None:
     ssid = secrets.WIFI_SSID
     psk = secrets.WIFI_PASSWORD
 
     if not ssid:
       fatal_error("Missing Details!", "Connect to the Badgeware IDE and open Config to set your WiFi details and region.")
-
-  if wlan:
-    _tick()
-    return is_connected()
 
   wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
